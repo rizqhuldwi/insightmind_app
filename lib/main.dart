@@ -1,24 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';// Import Hive [cite: 79]
 import 'package:pam_teori/src/app.dart';
+import 'features/insightmind/data/local/screening_record.dart';// Import Model Hive (adapter) [cite: 78]
 
-void main() {
-  testWidgets('FAB adds a Chip to the HomePage', (WidgetTester tester) async {
-    // Build the app inside a ProviderScope (as the app expects).
-    // Build the app (InsightMindApp already manages providers if needed).
-    await tester.pumpWidget(const InsightMindApp());
+void main() async { // Tambahkan 'async' [cite: 79]
+  WidgetsFlutterBinding.ensureInitialized();
 
-    // The HomePage shows a description text.
+// WEEK6: Inisialisasi Hive untuk Flutter (buat direktori penyimpanan) [cite: 77]
+  await Hive.initFlutter();// Aktifkan Hive saat aplikasi boot [cite: 61]
+  
+// WEEK6: Registrasi adapter agar Hive tahu cara serialisasi ScreeningRecord [cite: 78]
+  Hive.registerAdapter(ScreeningRecordAdapter());// Adapter wajib didaftarkan [cite: 78]
 
-    // Initially there should be no Chip widgets (no answers yet).
-    expect(find.byType(Chip), findsNothing);
+// WEEK6: Buka "box" (database kecil) tempat menyimpan record screening [cite: 67]
+  await Hive.openBox<ScreeningRecord>('screening_records'); 
 
-    // Tap the FAB (add) and rebuild.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // After tapping, a Chip representing the new answer should appear.
-    expect(find.byType(Chip), findsOneWidget);
-  });
+// Riverpod root scope tetap sama seperti M2-M [cite: 327]
+  runApp(const ProviderScope(child: InsightMindApp()));
 }
