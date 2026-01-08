@@ -111,10 +111,8 @@ class HomePage extends ConsumerWidget {
           // Simulasi tambah angka 0-3
           final newValue = (DateTime.now().millisecondsSinceEpoch % 4).toInt();
           // Membuat copy baru dan menambahkan nilai
-          final current = [...ref.read(answersProvider)];
-          current.add(newValue);
-          // Mengupdate state
-          ref.read(answersProvider.notifier).state = current; 
+          // Mengupdate state menggunakan method yang tersedia
+          ref.read(answersProvider.notifier).addAnswer(newValue); 
         },
         child: const Icon(Icons.add),
       ),

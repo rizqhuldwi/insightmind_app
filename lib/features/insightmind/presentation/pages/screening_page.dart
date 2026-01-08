@@ -45,8 +45,8 @@ class ScreeningPage extends ConsumerWidget {
         ordered.add(qState.answers[q.id]!);
       }
       
-      // Update answersProvider (StateProvider<List<int>>)
-      ref.read(answersProvider.notifier).state = ordered;
+      // Update answersProvider menggunakan method yang tersedia
+      ref.read(answersProvider.notifier).setAnswers(ordered);
 
       // Navigasi ke halaman hasil
       Navigator.of(context).push(

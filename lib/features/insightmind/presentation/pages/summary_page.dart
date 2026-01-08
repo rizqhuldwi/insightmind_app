@@ -102,7 +102,7 @@ class SummaryPage extends ConsumerWidget {
     void handleSubmit() {
       // Alirkan jawaban yang sudah diurutkan ke pipeline Minggu 2 (answersProvider)
       final answersOrdered = questions.map((q) => answers[q.id]!).toList();
-      ref.read(answersProvider.notifier).state = answersOrdered;
+      ref.read(answersProvider.notifier).setAnswers(answersOrdered);
 
       // Navigasi ke Halaman Hasil
       Navigator.of(context).push(
@@ -127,7 +127,7 @@ class SummaryPage extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.indigo.withOpacity(0.1),
+                    color: Colors.indigo.withAlpha(25),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -164,14 +164,14 @@ class SummaryPage extends ConsumerWidget {
                     Chip(
                       label: Text('$totalQuestions Total Pertanyaan'),
                       avatar: CircleAvatar(child: Text('$totalQuestions')),
-                      backgroundColor: Colors.indigo.withOpacity(0.1),
+                      backgroundColor: Colors.indigo.withAlpha(25),
                       labelStyle: TextStyle(color: Colors.indigo[800]),
                     ),
                     const SizedBox(width: 8),
                     Chip(
                       label: Text('$answeredQuestions Dijawab'),
                       avatar: CircleAvatar(child: Text('$answeredQuestions')),
-                      backgroundColor: Colors.green.withOpacity(0.1),
+                      backgroundColor: Colors.green.withAlpha(25),
                       labelStyle: TextStyle(color: Colors.green[800]),
                     ),
                   ],

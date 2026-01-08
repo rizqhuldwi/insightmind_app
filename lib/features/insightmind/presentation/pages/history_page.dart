@@ -69,6 +69,7 @@ class HistoryPage extends ConsumerWidget {
                       // Refresh UI
                       ref.invalidate(historyListProvider); // Invalidasi Future agar data update
                       
+                      if (!context.mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Riwayat dihapus.')),
                       );
@@ -101,6 +102,7 @@ class HistoryPage extends ConsumerWidget {
                 if (ok == true) {
                   await repo.clearAll(); // Kosongkan semua
                   ref.invalidate(historyListProvider); // Refresh UI
+                  if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Semua riwayat dikosongkan.')),
                   );
