@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive_flutter/hive_flutter.dart';// Import Hive [cite: 79]
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:pam_teori/src/app.dart';
-import 'features/insightmind/data/local/screening_record.dart';// Import Model Hive (adapter) [cite: 78]
+import 'features/insightmind/data/local/screening_record.dart';
+import 'features/insightmind/data/local/journal_entry.dart';
 
-void main() async { // Tambahkan 'async' [cite: 79]
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-// WEEK6: Inisialisasi Hive untuk Flutter (buat direktori penyimpanan) [cite: 77]
-  await Hive.initFlutter();// Aktifkan Hive saat aplikasi boot [cite: 61]
+  // Inisialisasi Hive untuk Flutter
+  await Hive.initFlutter();
   
-// WEEK6: Registrasi adapter agar Hive tahu cara serialisasi ScreeningRecord [cite: 78]
-  Hive.registerAdapter(ScreeningRecordAdapter());// Adapter wajib didaftarkan [cite: 78]
+  // Registrasi adapter
+  Hive.registerAdapter(ScreeningRecordAdapter());
+  Hive.registerAdapter(JournalEntryAdapter());
 
-// WEEK6: Buka "box" (database kecil) tempat menyimpan record screening [cite: 67]
+  // Buka box-box yang diperlukan
   await Hive.openBox<ScreeningRecord>('screening_records'); 
+  await Hive.openBox<JournalEntry>('journals');
 
-// Riverpod root scope tetap sama seperti M2-M [cite: 327]
+  // Riverpod root scope
   runApp(const ProviderScope(child: InsightMindApp()));
 }
