@@ -19,11 +19,15 @@ class ScreeningRecord extends HiveObject {
   @HiveField(4) // WEEK6: opsional untuk catatan pengguna
   final String? note;
 
+  @HiveField(5) // Menyimpan jawaban dalam format JSON string
+  final String? answersJson; // Format: {"q1": 2, "q2": 0, ...}
+
   ScreeningRecord({
     required this.id,
     required this.timestamp,
     required this.score,
     required this.riskLevel,
     this.note,
+    this.answersJson,
   });
 }

@@ -19,6 +19,7 @@ class HistoryRepository {
     required int score,
     required String riskLevel,
     String? note,
+    String? answersJson, // JSON string dari jawaban
   }) async {
     final box = await _openBox();
     final id = const Uuid().v4(); // ID unik
@@ -28,6 +29,7 @@ class HistoryRepository {
       score: score,
       riskLevel: riskLevel,
       note: note,
+      answersJson: answersJson,
     );
 
     await box.put(id, record); // simpan dengan key = id (mudah dihapus per item)

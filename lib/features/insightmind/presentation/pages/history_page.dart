@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pam_teori/features/insightmind/presentation/providers/history_provider.dart';
+import 'history_detail_page.dart';
 
 class HistoryPage extends ConsumerWidget {
   const HistoryPage({super.key});
@@ -53,27 +54,41 @@ class HistoryPage extends ConsumerWidget {
               return Card(
                 elevation: 1,
                 child: ListTile(
+                  onTap: () {
+                    // Navigate to detail page
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => HistoryDetailPage(record: record),
+                      ),
+                    );
+                  },
                   title: Text('Skor: ${record.score} (${record.riskLevel})'),
                   subtitle: Text(
                     // Tampilkan timestamp & id (informasi teknis)
-                    'Waktu: ${record.timestamp.toLocal().toString().substring(0, 16)} | ID: ${record.id}',
+                    'Waktu: ${record.timestamp.toLocal().toString().substring(0, 16)}',
                     maxLines: 2,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    tooltip: 'Hapus item ini',
-                    onPressed: () async {
-                      await repo.deleteById(record.id); // Hapus item
-                      
-                      // Refresh UI
-                      ref.invalidate(historyListProvider); // Invalidasi Future agar data update
-                      
-                      if (!context.mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Riwayat dihapus.')),
-                      );
-                    },
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        tooltip: 'Hapus item ini',
+                        onPressed: () async {
+                          await repo.deleteById(record.id); // Hapus item
+                          
+                          // Refresh UI
+                          ref.invalidate(historyListProvider); // Invalidasi Future agar data update
+                          
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Riwayat dihapus.')),
+                          );
+                        },
+                      ),
+                      const Icon(Icons.chevron_right, color: Colors.grey),
+                    ],
                   ),
                 ),
               );

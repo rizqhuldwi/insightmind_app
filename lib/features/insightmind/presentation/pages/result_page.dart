@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pam_teori/features/insightmind/presentation/providers/history_provider.dart';
+import 'dart:convert';
 import '../providers/score_provider.dart';
+import '../providers/questionnaire_provider.dart';
 // Digunakan untuk autosave Hive dan refresh list
 
 // Menggunakan ConsumerStatefulWidget untuk menangani lifecycle (didChangeDependencies)
@@ -23,12 +25,17 @@ class _ResultPageState extends ConsumerState<ResultPage> {
     // Simpan data hanya ketika halaman dimuat pertama kali [cite: 397]
     if (!_saved) {
       final result = ref.read(resultProvider); // Ambil hasil akhir (skor + risiko)
+      final qState = ref.read(questionnaireProvider); // Ambil state jawaban
       final repo = ref.read(historyRepositoryProvider);
+      
+      // Convert answers Map ke JSON string
+      final answersJson = jsonEncode(qState.answers);
       
       repo.addRecord(
         score: result.score,
         riskLevel: result.riskLevel,
         note: null,
+        answersJson: answersJson, // Simpan jawaban detail
       ).then((_) {
         // Refresh list history agar data terbaru muncul di HistoryPage
         if (mounted) {

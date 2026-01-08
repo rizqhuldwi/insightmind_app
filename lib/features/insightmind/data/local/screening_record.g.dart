@@ -22,13 +22,14 @@ class ScreeningRecordAdapter extends TypeAdapter<ScreeningRecord> {
       score: fields[2] as int,
       riskLevel: fields[3] as String,
       note: fields[4] as String?,
+      answersJson: fields[5] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, ScreeningRecord obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -38,7 +39,9 @@ class ScreeningRecordAdapter extends TypeAdapter<ScreeningRecord> {
       ..writeByte(3)
       ..write(obj.riskLevel)
       ..writeByte(4)
-      ..write(obj.note);
+      ..write(obj.note)
+      ..writeByte(5)
+      ..write(obj.answersJson);
   }
 
   @override
