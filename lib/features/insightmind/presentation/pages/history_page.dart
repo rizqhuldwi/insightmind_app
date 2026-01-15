@@ -1,17 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pam_teori/features/insightmind/presentation/providers/history_provider.dart';
+import '../../../../src/app_themes.dart';
 import 'history_detail_page.dart';
 
 class HistoryPage extends ConsumerWidget {
   const HistoryPage({super.key});
 
-  // Fungsi konfirmasi dialog untuk hapus semua
-  Future<bool?> _showClearDialog(BuildContext context) {
+  Future<bool?> _showClearDialog(BuildContext context, bool isDark) {
     return showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Konfirmasi'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.delete_sweep_rounded, color: Colors.red),
+            ),
+            const SizedBox(width: 12),
+            const Text('Konfirmasi'),
+          ],
+        ),
         content: const Text('Yakin ingin menghapus semua riwayat?'),
         actions: [
           TextButton(
@@ -20,6 +35,7 @@ class HistoryPage extends ConsumerWidget {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Hapus'),
           ),
         ],
@@ -29,104 +45,331 @@ class HistoryPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // WEEK6: load semua riwayat
     final historyAsync = ref.watch(historyListProvider);
     final repo = ref.read(historyRepositoryProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Riwayat Screening'),
-        backgroundColor: Colors.indigo,
-        foregroundColor: Colors.white,
-      ),
-      // body menangani 3 state (data/loading/error)
-      body: historyAsync.when(
-        data: (items) {
-          if (items.isEmpty) {
-            return const Center(child: Text('Belum ada riwayat'));
-          }
-          return ListView.separated(
-            padding: const EdgeInsets.all(16),
-            itemCount: items.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 8),
-            itemBuilder: (context, index) {
-              final record = items[index];
-              return Card(
-                elevation: 1,
-                child: ListTile(
-                  onTap: () {
-                    // Navigate to detail page
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => HistoryDetailPage(record: record),
-                      ),
+      body: CustomScrollView(
+        slivers: [
+          // Modern App Bar
+          SliverAppBar(
+            expandedHeight: 120,
+            floating: false,
+            pinned: true,
+            elevation: 0,
+            backgroundColor: AppColors.primaryBlue,
+            leading: IconButton(
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.arrow_back_rounded,
+                  color: Colors.white,
+                ),
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: isDark
+                      ? AppColors.darkGradient
+                      : AppColors.primaryGradient,
+                ),
+                child: SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.history_rounded,
+                              color: Colors.white,
+                              size: 28,
+                            ),
+                            const SizedBox(width: 12),
+                            const Text(
+                              'Riwayat Screening',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // History List
+          historyAsync.when(
+            data: (items) {
+              if (items.isEmpty) {
+                return SliverFillRemaining(child: _buildEmptyState(isDark));
+              }
+
+              return SliverPadding(
+                padding: const EdgeInsets.all(16),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final record = items[index];
+                    return _buildHistoryCard(
+                      context,
+                      ref,
+                      record,
+                      repo,
+                      isDark,
                     );
-                  },
-                  title: Text('Skor: ${record.score} (${record.riskLevel})'),
-                  subtitle: Text(
-                    // Tampilkan timestamp & id (informasi teknis)
-                    'Waktu: ${record.timestamp.toLocal().toString().substring(0, 16)}',
-                    maxLines: 2,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        tooltip: 'Hapus item ini',
-                        onPressed: () async {
-                          await repo.deleteById(record.id); // Hapus item
-                          
-                          // Refresh UI
-                          ref.invalidate(historyListProvider); // Invalidasi Future agar data update
-                          
-                          if (!context.mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Riwayat dihapus.')),
-                          );
-                        },
-                      ),
-                      const Icon(Icons.chevron_right, color: Colors.grey),
-                    ],
-                  ),
+                  }, childCount: items.length),
                 ),
               );
             },
-          );
-        },
-        // State Loading
-        loading: () => const Center(child: CircularProgressIndicator()),
-        // State Error
-        error: (e, st) => Center(child: Text('Error: $e')),
+            loading: () => const SliverFillRemaining(
+              child: Center(child: CircularProgressIndicator()),
+            ),
+            error: (e, st) =>
+                SliverFillRemaining(child: Center(child: Text('Error: $e'))),
+          ),
+        ],
       ),
-      
-      // WEEK6: Tombol "Kosongkan Semua" di bawah (Hanya muncul jika ada data)
+
+      // Clear All Button
       bottomNavigationBar: historyAsync.maybeWhen(
         data: (items) {
-          if (items.isEmpty) return null; 
-          
+          if (items.isEmpty) return null;
+
           return SafeArea(
             minimum: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: FilledButton.tonalIcon(
-              icon: const Icon(Icons.delete_sweep),
+              icon: const Icon(Icons.delete_sweep_rounded),
               label: const Text('Kosongkan Semua Riwayat'),
               onPressed: () async {
-                final ok = await _showClearDialog(context); // Tampilkan dialog konfirmasi
-                
+                final ok = await _showClearDialog(context, isDark);
+
                 if (ok == true) {
-                  await repo.clearAll(); // Kosongkan semua
-                  ref.invalidate(historyListProvider); // Refresh UI
+                  await repo.clearAll();
+                  ref.invalidate(historyListProvider);
                   if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Semua riwayat dikosongkan.')),
+                    SnackBar(
+                      content: const Text('Semua riwayat dikosongkan.'),
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
                   );
                 }
               },
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
             ),
           );
         },
         orElse: () => null,
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(bool isDark) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: AppColors.primaryBlue.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.history_rounded,
+              size: 64,
+              color: AppColors.primaryBlue.withOpacity(0.5),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Belum ada riwayat',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: isDark ? Colors.white : Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Hasil screening akan muncul di sini',
+            style: TextStyle(
+              fontSize: 14,
+              color: isDark ? Colors.grey[400] : Colors.grey[600],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHistoryCard(
+    BuildContext context,
+    WidgetRef ref,
+    dynamic record,
+    dynamic repo,
+    bool isDark,
+  ) {
+    Color riskColor;
+    IconData riskIcon;
+
+    switch (record.riskLevel) {
+      case 'Tinggi':
+        riskColor = const Color(0xFFEF4444);
+        riskIcon = Icons.warning_rounded;
+        break;
+      case 'Sedang':
+        riskColor = const Color(0xFFF59E0B);
+        riskIcon = Icons.info_rounded;
+        break;
+      default:
+        riskColor = const Color(0xFF10B981);
+        riskIcon = Icons.check_circle_rounded;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: isDark
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => HistoryDetailPage(record: record),
+            ),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              // Score Circle
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: riskColor.withOpacity(0.1),
+                  border: Border.all(color: riskColor, width: 2),
+                ),
+                child: Center(
+                  child: Text(
+                    '${record.score}',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: riskColor,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              // Details
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(riskIcon, color: riskColor, size: 18),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Risiko ${record.riskLevel}',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: riskColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.access_time_rounded,
+                          size: 14,
+                          color: isDark ? Colors.grey[500] : Colors.grey[400],
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${record.timestamp.toLocal().toString().substring(0, 16)}',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: isDark ? Colors.grey[400] : Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              // Actions
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      Icons.delete_outline_rounded,
+                      color: isDark ? Colors.grey[400] : Colors.grey[500],
+                    ),
+                    tooltip: 'Hapus',
+                    onPressed: () async {
+                      await repo.deleteById(record.id);
+                      ref.invalidate(historyListProvider);
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Text('Riwayat dihapus.'),
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: isDark ? Colors.grey[500] : Colors.grey[400],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

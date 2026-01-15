@@ -17,7 +17,7 @@ class AuthRepository {
   String _hashPassword(String password) {
     // Simple hash menggunakan base64 encoding
     // Untuk keamanan lebih baik, gunakan package crypto
-    final bytes = utf8.encode(password + 'insightmind_salt');
+    final bytes = utf8.encode('${password}insightmind_salt');
     return base64Encode(bytes);
   }
 

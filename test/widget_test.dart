@@ -10,7 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 // A small local MyApp implementation so the test can reference MyApp.
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
 }
 
 class CounterApp extends StatefulWidget {
-  const CounterApp({Key? key}) : super(key: key);
+  const CounterApp({super.key});
 
   @override
   _CounterAppState createState() => _CounterAppState();

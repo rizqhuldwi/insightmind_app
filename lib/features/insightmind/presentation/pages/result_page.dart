@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pam_teori/features/insightmind/presentation/providers/history_provider.dart';
 import 'dart:convert';
+import '../../../../src/app_themes.dart';
 import '../providers/score_provider.dart';
 import '../providers/questionnaire_provider.dart';
 import '../providers/auth_provider.dart';
-// Digunakan untuk autosave Hive dan refresh list
 
-// Menggunakan ConsumerStatefulWidget untuk menangani lifecycle (didChangeDependencies)
 class ResultPage extends ConsumerStatefulWidget {
   const ResultPage({super.key});
 
@@ -16,35 +15,33 @@ class ResultPage extends ConsumerStatefulWidget {
 }
 
 class _ResultPageState extends ConsumerState<ResultPage> {
-  // Flag agar data tidak disimpan berulang kali saat widget rebuild [cite: 397]
-  bool _saved = false; 
+  bool _saved = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    
-    // Simpan data hanya ketika halaman dimuat pertama kali [cite: 397]
+
     if (!_saved) {
-      final result = ref.read(resultProvider); // Ambil hasil akhir (skor + risiko)
-      final qState = ref.read(questionnaireProvider); // Ambil state jawaban
+      final result = ref.read(resultProvider);
+      final qState = ref.read(questionnaireProvider);
       final repo = ref.read(historyRepositoryProvider);
-      final authState = ref.read(authNotifierProvider); // Ambil user yang login
-      
-      // Convert answers Map ke JSON string
+      final authState = ref.read(authNotifierProvider);
+
       final answersJson = jsonEncode(qState.answers);
-      
-      repo.addRecord(
-        score: result.score,
-        riskLevel: result.riskLevel,
-        note: null,
-        answersJson: answersJson, // Simpan jawaban detail
-        userId: authState.user?.id, // Simpan userId untuk linking dengan user
-      ).then((_) {
-        // Refresh list history agar data terbaru muncul di HistoryPage
-        if (mounted) {
-          ref.invalidate(historyListProvider); 
-        }
-      });
+
+      repo
+          .addRecord(
+            score: result.score,
+            riskLevel: result.riskLevel,
+            note: null,
+            answersJson: answersJson,
+            userId: authState.user?.id,
+          )
+          .then((_) {
+            if (mounted) {
+              ref.invalidate(historyListProvider);
+            }
+          });
       _saved = true;
     }
   }
@@ -52,101 +49,248 @@ class _ResultPageState extends ConsumerState<ResultPage> {
   @override
   Widget build(BuildContext context) {
     final result = ref.watch(resultProvider);
-    
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     String recommendation;
-    
-    // Logika penentuan rekomendasi berdasarkan riskLevel
+    IconData riskIcon;
+    Color riskColor;
+    String riskEmoji;
+
     switch (result.riskLevel) {
       case 'Tinggi':
         recommendation =
-            'Pertimbangkan berbicara dengan konselor/psikolog.';
+            'Pertimbangkan untuk berbicara dengan konselor atau psikolog profesional. Kesehatan mental Anda sangat penting.';
+        riskIcon = Icons.warning_rounded;
+        riskColor = const Color(0xFFEF4444);
+        riskEmoji = '😟';
         break;
       case 'Sedang':
         recommendation =
-            'Kurangi beban, istirahat cukup, dan hubungi layanan kampus.';
+            'Kurangi beban, istirahat cukup, dan pertimbangkan untuk menghubungi layanan konseling kampus.';
+        riskIcon = Icons.info_rounded;
+        riskColor = const Color(0xFFF59E0B);
+        riskEmoji = '😐';
         break;
       default:
         recommendation =
-            'Pertahankan kebiasaan baik. Jaga tidur, makan, dan olahraga.';
+            'Pertahankan kebiasaan baik Anda! Tetap jaga pola tidur, makan sehat, dan olahraga teratur.';
+        riskIcon = Icons.check_circle_rounded;
+        riskColor = const Color(0xFF10B981);
+        riskEmoji = '😊';
         break;
     }
 
-    // Fungsi bantu untuk warna dinamis
-    Color getColorByRisk(String riskLevel) {
-      if (riskLevel == 'Tinggi') return Colors.red;
-      if (riskLevel == 'Sedang') return Colors.orange;
-      return Colors.green;
-    }
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Hasil Screening'),
-        backgroundColor: Colors.indigo,
-        foregroundColor: Colors.white,
-        centerTitle: true,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Center(
-          child: Card(
-            elevation: 4,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Ikon
-                  const Icon(Icons.emoji_objects, size: 60, color: Colors.indigo),
-                  const SizedBox(height: 12),
-                  
-                  // Skor
-                  Text(
-                    'Skor Anda: ${result.score}',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  
-                  // Tingkat Risiko (Warna Dinamis)
-                  Text(
-                    'Tingkat Risiko: ${result.riskLevel}',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      // Penentuan warna risiko
-                      color: getColorByRisk(result.riskLevel),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: isDark ? AppColors.darkGradient : AppColors.primaryGradient,
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // App Bar
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.arrow_back_rounded,
+                          color: Colors.white,
+                        ),
+                      ),
+                      onPressed: () => Navigator.pop(context),
                     ),
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Rekomendasi
-                  Text(
-                    recommendation,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Informasi bahwa hasil otomatis disimpan [cite: 399]
-                  const Text(
-                    'Hasil telah disimpan di perangkat (Riwayat)',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
-                  ),
-                  
-                  const SizedBox(height: 12),
-                  
-                  // Tombol Kembali
-                  FilledButton.icon(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back),
-                    label: const Text('Kembali'),
-                  ),
-                ],
+                    const Expanded(
+                      child: Text(
+                        'Hasil Screening',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    const SizedBox(width: 48),
+                  ],
+                ),
               ),
-            ),
+
+              // Result Card
+              Expanded(
+                child: Container(
+                  margin: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Emoji
+                      Text(riskEmoji, style: const TextStyle(fontSize: 80)),
+                      const SizedBox(height: 24),
+
+                      // Score Circle
+                      Container(
+                        width: 140,
+                        height: 140,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            colors: [
+                              riskColor.withOpacity(0.2),
+                              riskColor.withOpacity(0.05),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          border: Border.all(color: riskColor, width: 4),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              '${result.score}',
+                              style: TextStyle(
+                                fontSize: 48,
+                                fontWeight: FontWeight.bold,
+                                color: riskColor,
+                              ),
+                            ),
+                            Text(
+                              'Skor',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: isDark
+                                    ? Colors.grey[400]
+                                    : Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Risk Level Badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: riskColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(30),
+                          border: Border.all(color: riskColor.withOpacity(0.3)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(riskIcon, color: riskColor, size: 24),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Risiko ${result.riskLevel}',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: riskColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Recommendation
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? const Color(0xFF334155)
+                              : Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.lightbulb_outline_rounded,
+                              color: AppColors.primaryBlue,
+                              size: 28,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              recommendation,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 14,
+                                height: 1.5,
+                                color: isDark
+                                    ? Colors.grey[300]
+                                    : Colors.grey[700],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Saved info
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.check_circle_rounded,
+                            size: 16,
+                            color: AppColors.primaryBlue,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Hasil telah disimpan ke riwayat',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontStyle: FontStyle.italic,
+                              color: isDark
+                                  ? Colors.grey[400]
+                                  : Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const Spacer(),
+
+                      // Back Button
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.home_rounded),
+                          label: const Text('Kembali ke Beranda'),
+                          style: FilledButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
