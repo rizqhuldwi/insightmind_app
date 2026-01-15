@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
+import '../widgets/theme_toggle_widget.dart';
+import '../../../../src/app_themes.dart';
 import '../../data/local/user.dart';
 import '../../data/local/screening_record.dart';
 import 'login_page.dart';
@@ -11,48 +13,130 @@ class AdminDashboardPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final allUsersAsync = ref.watch(allUsersProvider);
+    final authState = ref.watch(authNotifierProvider);
+    final adminName = authState.user?.name ?? 'Admin';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Admin Dashboard'),
-        backgroundColor: Colors.indigo,
-        foregroundColor: Colors.white,
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Logout',
-            onPressed: () => _showLogoutDialog(context, ref),
+      body: CustomScrollView(
+        slivers: [
+          // Modern App Bar with Gradient
+          SliverAppBar(
+            expandedHeight: 180,
+            floating: false,
+            pinned: true,
+            elevation: 0,
+            backgroundColor: AppColors.primaryBlue,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: isDark
+                      ? AppColors.darkGradient
+                      : AppColors.primaryGradient,
+                ),
+                child: SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Selamat Datang 👋',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.white.withOpacity(0.9),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  adminName,
+                                  style: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                const ThemeToggleWidget(),
+                                const SizedBox(width: 4),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: IconButton(
+                                    icon: const Icon(
+                                      Icons.logout_rounded,
+                                      color: Colors.white,
+                                    ),
+                                    tooltip: 'Logout',
+                                    onPressed: () =>
+                                        _showLogoutDialog(context, ref),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // Content
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  allUsersAsync.when(
+                    loading: () => const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(32),
+                        child: CircularProgressIndicator(),
+                      ),
+                    ),
+                    error: (e, st) => Center(child: Text('Error: $e')),
+                    data: (users) {
+                      // Filter hanya user biasa (bukan admin)
+                      final regularUsers = users
+                          .where((u) => u.role != 'admin')
+                          .toList();
+
+                      if (regularUsers.isEmpty) {
+                        return _buildEmptyState();
+                      }
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildHeader(regularUsers.length),
+                          const SizedBox(height: 16),
+                          _buildSummaryStats(regularUsers),
+                          const SizedBox(height: 20),
+                          ...regularUsers.map((user) => _UserCard(user: user)),
+                        ],
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
-      ),
-      body: allUsersAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, st) => Center(child: Text('Error: $e')),
-        data: (users) {
-          // Filter hanya user biasa (bukan admin)
-          final regularUsers = users.where((u) => u.role != 'admin').toList();
-
-          if (regularUsers.isEmpty) {
-            return _buildEmptyState();
-          }
-
-          return RefreshIndicator(
-            onRefresh: () async {
-              ref.invalidate(allUsersProvider);
-            },
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: regularUsers.length + 1, // +1 untuk header
-              itemBuilder: (context, index) {
-                if (index == 0) {
-                  return _buildHeader(regularUsers.length);
-                }
-                return _UserCard(user: regularUsers[index - 1]);
-              },
-            ),
-          );
-        },
       ),
     );
   }
@@ -62,16 +146,31 @@ class AdminDashboardPage extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.people_outline, size: 80, color: Colors.grey[400]),
-          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: AppColors.primaryBlue.withAlpha(30),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.people_outline,
+              size: 80,
+              color: AppColors.primaryBlue,
+            ),
+          ),
+          const SizedBox(height: 24),
           Text(
             'Belum ada user terdaftar',
-            style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[800],
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             'User yang mendaftar akan muncul di sini',
-            style: TextStyle(color: Colors.grey[500]),
+            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
           ),
         ],
       ),
@@ -87,7 +186,7 @@ class AdminDashboardPage extends ConsumerWidget {
           Text(
             'Daftar User Terdaftar',
             style: TextStyle(
-              fontSize: 20,
+              fontSize: 24,
               fontWeight: FontWeight.bold,
               color: Colors.grey[800],
             ),
@@ -95,11 +194,68 @@ class AdminDashboardPage extends ConsumerWidget {
           const SizedBox(height: 4),
           Text(
             '$userCount user terdaftar',
-            style: TextStyle(color: Colors.grey[600]),
+            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildSummaryStats(List<User> users) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: AppColors.primaryGradient,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primaryBlue.withValues(alpha: 0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _buildStatCard('Total User', users.length.toString(), Icons.people),
+          _buildStatCard('Aktif', '${users.length}', Icons.check_circle),
+          _buildStatCard(
+            'Screening',
+            '${_getTotalScreenings(users)}',
+            Icons.assessment,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatCard(String label, String value, IconData icon) {
+    return Column(
+      children: [
+        Icon(icon, color: Colors.white, size: 24),
+        const SizedBox(height: 8),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: const TextStyle(fontSize: 12, color: Colors.white70),
+        ),
+      ],
+    );
+  }
+
+  int _getTotalScreenings(List<User> users) {
+    // Placeholder for total screenings across all users
+    // In production, this would aggregate screening records from Hive
+    return users.length; // Simplified for now
   }
 
   void _showLogoutDialog(BuildContext context, WidgetRef ref) {
@@ -108,6 +264,7 @@ class AdminDashboardPage extends ConsumerWidget {
       builder: (ctx) => AlertDialog(
         title: const Text('Logout'),
         content: const Text('Apakah Anda yakin ingin keluar?'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -146,14 +303,28 @@ class _UserCardState extends ConsumerState<_UserCard> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: isDark
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+      ),
       child: Column(
         children: [
           // User Info Header
           InkWell(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(20),
             onTap: () {
               setState(() => _isExpanded = !_isExpanded);
             },
@@ -162,17 +333,23 @@ class _UserCardState extends ConsumerState<_UserCard> {
               child: Row(
                 children: [
                   // Avatar
-                  CircleAvatar(
-                    backgroundColor: Colors.indigo.withAlpha(30),
-                    radius: 24,
-                    child: Text(
-                      widget.user.name.isNotEmpty 
-                          ? widget.user.name[0].toUpperCase() 
-                          : '?',
-                      style: const TextStyle(
-                        color: Colors.indigo,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
+                  Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      gradient: AppColors.primaryGradient,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Center(
+                      child: Text(
+                        widget.user.name.isNotEmpty
+                            ? widget.user.name[0].toUpperCase()
+                            : '?',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 24,
+                        ),
                       ),
                     ),
                   ),
@@ -218,16 +395,19 @@ class _UserCardState extends ConsumerState<_UserCard> {
   }
 
   Widget _buildScreeningDetails() {
-    final screeningAsync = ref.watch(userScreeningRecordsProvider(widget.user.id));
+    final screeningAsync = ref.watch(
+      userScreeningRecordsProvider(widget.user.id),
+    );
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: isDark ? const Color(0xFF0F172A) : Colors.grey[50],
         borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(12),
-          bottomRight: Radius.circular(12),
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
         ),
       ),
       child: screeningAsync.when(
@@ -244,12 +424,12 @@ class _UserCardState extends ConsumerState<_UserCard> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.orange.withAlpha(20),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 children: [
                   Icon(Icons.warning_amber, color: Colors.orange[700]),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 12),
                   const Text('Belum melakukan screening'),
                 ],
               ),
@@ -259,12 +439,12 @@ class _UserCardState extends ConsumerState<_UserCard> {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Summary
+              // Summary Stats
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.indigo.withAlpha(20),
-                  borderRadius: BorderRadius.circular(8),
+                  gradient: AppColors.primaryGradient,
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -275,14 +455,16 @@ class _UserCardState extends ConsumerState<_UserCard> {
                   ],
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
 
-              // Recent Screenings
+              // Recent Screenings Header
               const Text(
                 'Riwayat Screening:',
-                style: TextStyle(fontWeight: FontWeight.w600),
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
+
+              // Recent Screenings List
               ...records.take(5).map((record) => _buildScreeningItem(record)),
             ],
           );
@@ -299,13 +481,13 @@ class _UserCardState extends ConsumerState<_UserCard> {
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 18,
-            color: Colors.indigo,
+            color: Colors.white,
           ),
         ),
         const SizedBox(height: 4),
         Text(
           label,
-          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+          style: const TextStyle(fontSize: 12, color: Colors.white70),
         ),
       ],
     );
@@ -313,27 +495,32 @@ class _UserCardState extends ConsumerState<_UserCard> {
 
   Widget _buildScreeningItem(ScreeningRecord record) {
     Color riskColor;
+    Color riskBgColor;
     switch (record.riskLevel.toLowerCase()) {
       case 'rendah':
-        riskColor = Colors.green;
+        riskColor = const Color(0xFF10B981);
+        riskBgColor = const Color(0xFF10B981).withAlpha(20);
         break;
       case 'sedang':
-        riskColor = Colors.orange;
+        riskColor = const Color(0xFFF59E0B);
+        riskBgColor = const Color(0xFFF59E0B).withAlpha(20);
         break;
       case 'tinggi':
-        riskColor = Colors.red;
+        riskColor = const Color(0xFFEF4444);
+        riskBgColor = const Color(0xFFEF4444).withAlpha(20);
         break;
       default:
         riskColor = Colors.grey;
+        riskBgColor = Colors.grey.withAlpha(20);
     }
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.withAlpha(50)),
+        color: riskBgColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: riskColor.withAlpha(50)),
       ),
       child: Row(
         children: [
@@ -352,11 +539,19 @@ class _UserCardState extends ConsumerState<_UserCard> {
               children: [
                 Text(
                   _formatDate(record.timestamp),
-                  style: const TextStyle(fontWeight: FontWeight.w500),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 13,
+                  ),
                 ),
+                const SizedBox(height: 2),
                 Text(
                   'Score: ${record.score} • ${record.riskLevel}',
-                  style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: riskColor,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
