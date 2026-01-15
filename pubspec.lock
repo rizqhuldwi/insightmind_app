@@ -201,6 +201,7 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.6"
+<<<<<<< HEAD
   equatable:
     dependency: transitive
     description:
@@ -209,6 +210,8 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.8"
+=======
+>>>>>>> 1d3a904c4797e8b816feaf9bd943964cad564fad
   fake_async:
     dependency: transitive
     description:
@@ -241,6 +244,7 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.1"
+<<<<<<< HEAD
   fl_chart:
     dependency: "direct main"
     description:
@@ -249,6 +253,8 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.69.2"
+=======
+>>>>>>> 1d3a904c4797e8b816feaf9bd943964cad564fad
   flutter:
     dependency: "direct main"
     description: flutter
@@ -360,6 +366,7 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.5.4"
+<<<<<<< HEAD
   intl:
     dependency: "direct main"
     description:
@@ -368,6 +375,8 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.19.0"
+=======
+>>>>>>> 1d3a904c4797e8b816feaf9bd943964cad564fad
   io:
     dependency: transitive
     description:
@@ -632,6 +641,7 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.6.1"
+<<<<<<< HEAD
   shared_preferences:
     dependency: "direct main"
     description:
@@ -688,6 +698,8 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.4.1"
+=======
+>>>>>>> 1d3a904c4797e8b816feaf9bd943964cad564fad
   shelf:
     dependency: transitive
     description:

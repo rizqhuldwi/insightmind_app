@@ -2,12 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/journal_provider.dart';
 import '../providers/auth_provider.dart';
+<<<<<<< HEAD
 import '../widgets/theme_toggle_widget.dart';
+=======
+>>>>>>> 1d3a904c4797e8b816feaf9bd943964cad564fad
 import 'screening_page.dart';
 import 'history_page.dart';
 import 'journal_page.dart';
 import 'login_page.dart';
+<<<<<<< HEAD
 import 'mood_tracker_page.dart';
+=======
+>>>>>>> 1d3a904c4797e8b816feaf9bd943964cad564fad
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -25,6 +31,7 @@ class HomePage extends ConsumerWidget {
         foregroundColor: Colors.white,
         centerTitle: false,
         actions: [
+<<<<<<< HEAD
           // Tombol mood tracker
           IconButton(
             icon: const Icon(Icons.mood),
@@ -35,6 +42,8 @@ class HomePage extends ConsumerWidget {
               );
             },
           ),
+=======
+>>>>>>> 1d3a904c4797e8b816feaf9bd943964cad564fad
           // Tombol menuju halaman jurnal
           IconButton(
             icon: const Icon(Icons.book_outlined),
@@ -55,8 +64,11 @@ class HomePage extends ConsumerWidget {
               );
             },
           ),
+<<<<<<< HEAD
           // Theme Toggle
           const ThemeToggleWidget(),
+=======
+>>>>>>> 1d3a904c4797e8b816feaf9bd943964cad564fad
           // Tombol logout
           IconButton(
             icon: const Icon(Icons.logout),
