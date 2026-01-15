@@ -2,7 +2,7 @@ import 'package:hive/hive.dart';
 
 part 'journal_entry.g.dart';
 
-@HiveType(typeId: 2) // typeId unik untuk model jurnal
+@HiveType(typeId: 3) // typeId unik untuk model jurnal
 class JournalEntry extends HiveObject {
   @HiveField(0)
   final String id;

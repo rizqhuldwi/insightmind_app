@@ -8,7 +8,7 @@ part of 'journal_entry.dart';
 
 class JournalEntryAdapter extends TypeAdapter<JournalEntry> {
   @override
-  final int typeId = 2;
+  final int typeId = 3;
 
   @override
   JournalEntry read(BinaryReader reader) {

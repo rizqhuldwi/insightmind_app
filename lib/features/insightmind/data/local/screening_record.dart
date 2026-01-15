@@ -22,6 +22,9 @@ class ScreeningRecord extends HiveObject {
   @HiveField(5) // Menyimpan jawaban dalam format JSON string
   final String? answersJson; // Format: {"q1": 2, "q2": 0, ...}
 
+  @HiveField(6) // ID user yang melakukan screening
+  final String? userId;
+
   ScreeningRecord({
     required this.id,
     required this.timestamp,
@@ -29,5 +32,6 @@ class ScreeningRecord extends HiveObject {
     required this.riskLevel,
     this.note,
     this.answersJson,
+    this.userId,
   });
 }

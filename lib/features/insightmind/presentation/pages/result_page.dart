@@ -4,6 +4,7 @@ import 'package:pam_teori/features/insightmind/presentation/providers/history_pr
 import 'dart:convert';
 import '../providers/score_provider.dart';
 import '../providers/questionnaire_provider.dart';
+import '../providers/auth_provider.dart';
 // Digunakan untuk autosave Hive dan refresh list
 
 // Menggunakan ConsumerStatefulWidget untuk menangani lifecycle (didChangeDependencies)
@@ -27,6 +28,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
       final result = ref.read(resultProvider); // Ambil hasil akhir (skor + risiko)
       final qState = ref.read(questionnaireProvider); // Ambil state jawaban
       final repo = ref.read(historyRepositoryProvider);
+      final authState = ref.read(authNotifierProvider); // Ambil user yang login
       
       // Convert answers Map ke JSON string
       final answersJson = jsonEncode(qState.answers);
@@ -36,6 +38,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
         riskLevel: result.riskLevel,
         note: null,
         answersJson: answersJson, // Simpan jawaban detail
+        userId: authState.user?.id, // Simpan userId untuk linking dengan user
       ).then((_) {
         // Refresh list history agar data terbaru muncul di HistoryPage
         if (mounted) {

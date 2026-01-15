@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/journal_provider.dart';
+import '../providers/auth_provider.dart';
 import 'screening_page.dart';
 import 'history_page.dart';
 import 'journal_page.dart';
+import 'login_page.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -11,13 +13,15 @@ class HomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final journalAsync = ref.watch(journalListProvider);
+    final authState = ref.watch(authNotifierProvider);
+    final userName = authState.user?.name ?? 'User';
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('InsightMind'),
+        title: Text('Halo, $userName!'),
         backgroundColor: Colors.indigo,
         foregroundColor: Colors.white,
-        centerTitle: true,
+        centerTitle: false,
         actions: [
           // Tombol menuju halaman jurnal
           IconButton(
@@ -38,6 +42,12 @@ class HomePage extends ConsumerWidget {
                 MaterialPageRoute(builder: (_) => const HistoryPage()),
               );
             },
+          ),
+          // Tombol logout
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Logout',
+            onPressed: () => _showLogoutDialog(context, ref),
           ),
         ],
       ),
@@ -350,6 +360,35 @@ class HomePage extends ConsumerWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  /// Dialog untuk konfirmasi logout
+  void _showLogoutDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Logout'),
+        content: const Text('Apakah Anda yakin ingin keluar?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await ref.read(authNotifierProvider.notifier).logout();
+              if (context.mounted) {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (_) => const LoginPage()),
+                );
+              }
+            },
+            child: const Text('Logout'),
+          ),
+        ],
       ),
     );
   }

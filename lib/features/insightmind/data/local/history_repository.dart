@@ -20,6 +20,7 @@ class HistoryRepository {
     required String riskLevel,
     String? note,
     String? answersJson, // JSON string dari jawaban
+    String? userId, // ID user yang melakukan screening
   }) async {
     final box = await _openBox();
     final id = const Uuid().v4(); // ID unik
@@ -30,6 +31,7 @@ class HistoryRepository {
       riskLevel: riskLevel,
       note: note,
       answersJson: answersJson,
+      userId: userId,
     );
 
     await box.put(
@@ -47,6 +49,14 @@ class HistoryRepository {
     return records;
   }
 
+  // Ambil riwayat berdasarkan userId
+  Future<List<ScreeningRecord>> getByUserId(String userId) async {
+    final box = await _openBox();
+    final records = box.values.where((r) => r.userId == userId).toList();
+    records.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    return records;
+  }
+
   // WEEK6: Hapus 1 item berdasarkan ID
   Future<void> deleteById(String id) async {
     final box = await _openBox();
@@ -59,4 +69,3 @@ class HistoryRepository {
     await box.clear();
   }
 }
-// testing commit
