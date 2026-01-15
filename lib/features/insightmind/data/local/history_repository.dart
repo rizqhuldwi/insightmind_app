@@ -32,7 +32,10 @@ class HistoryRepository {
       answersJson: answersJson,
     );
 
-    await box.put(id, record); // simpan dengan key = id (mudah dihapus per item)
+    await box.put(
+      id,
+      record,
+    ); // simpan dengan key = id (mudah dihapus per item)
   }
 
   // WEEK6: Ambil semua riwayat (urutkan terbaru di atas)
@@ -56,3 +59,4 @@ class HistoryRepository {
     await box.clear();
   }
 }
+// testing commit
