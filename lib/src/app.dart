@@ -27,14 +27,14 @@ class _InsightMindAppState extends ConsumerState<InsightMindApp> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authNotifierProvider);
-    final themeMode = ref.watch(themeProvider);
+    final themeSettings = ref.watch(themeProvider);
 
     return MaterialApp(
       title: 'InsightMind',
       debugShowCheckedModeBanner: false,
-      theme: lightTheme,
-      darkTheme: darkTheme,
-      themeMode: themeMode,
+      theme: AppTheme.createTheme(false, themeSettings.palette),
+      darkTheme: AppTheme.createTheme(true, themeSettings.palette),
+      themeMode: themeSettings.mode,
       home: _buildHome(authState),
     );
   }
@@ -67,6 +67,6 @@ class _InsightMindAppState extends ConsumerState<InsightMindApp> {
     }
 
     // Jika user biasa, tampilkan home page
-    return const HomePage();
+    return const MainPage();
   }
 }

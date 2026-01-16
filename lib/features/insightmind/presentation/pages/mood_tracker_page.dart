@@ -19,10 +19,13 @@ class _MoodTrackerPageState extends ConsumerState<MoodTrackerPage> {
   bool showWeeklyView = true;
 
   @override
+  @override
   Widget build(BuildContext context) {
     final moodListAsync = ref.watch(moodListProvider);
     final averageMood = ref.watch(averageMoodProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       body: CustomScrollView(
@@ -33,7 +36,7 @@ class _MoodTrackerPageState extends ConsumerState<MoodTrackerPage> {
             floating: false,
             pinned: true,
             elevation: 0,
-            backgroundColor: AppColors.primaryBlue,
+            backgroundColor: primaryColor,
             leading: IconButton(
               icon: Container(
                 padding: const EdgeInsets.all(8),
@@ -52,9 +55,16 @@ class _MoodTrackerPageState extends ConsumerState<MoodTrackerPage> {
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 decoration: BoxDecoration(
-                  gradient: isDark
-                      ? AppColors.darkGradient
-                      : AppColors.primaryGradient,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: isDark
+                        ? [
+                            Color.lerp(primaryColor, Colors.black, 0.2)!,
+                            primaryColor,
+                          ]
+                        : [primaryColor, colorScheme.secondary],
+                  ),
                 ),
                 child: SafeArea(
                   child: Padding(
@@ -104,7 +114,7 @@ class _MoodTrackerPageState extends ConsumerState<MoodTrackerPage> {
                     children: [
                       // Average Mood Card
                       if (allMoods.isNotEmpty) ...[
-                        _buildAverageMoodCard(averageMood, isDark),
+                        _buildAverageMoodCard(averageMood, isDark, primaryColor, colorScheme),
                         const SizedBox(height: 16),
                       ],
 
@@ -131,13 +141,13 @@ class _MoodTrackerPageState extends ConsumerState<MoodTrackerPage> {
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: AppColors.primaryBlue.withOpacity(0.1),
+                                color: primaryColor.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
                                 '${allMoods.length} entri',
                                 style: TextStyle(
-                                  color: AppColors.primaryBlue,
+                                  color: primaryColor,
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -149,9 +159,9 @@ class _MoodTrackerPageState extends ConsumerState<MoodTrackerPage> {
 
                       // Mood History List
                       if (allMoods.isEmpty)
-                        _buildEmptyState(isDark)
+                        _buildEmptyState(context, isDark)
                       else
-                        ...allMoods.map((mood) => _buildMoodItem(mood, isDark)),
+                        ...allMoods.map((mood) => _buildMoodItem(mood, isDark, primaryColor)),
 
                       const SizedBox(height: 80), // Space for FAB
                     ],
@@ -171,20 +181,27 @@ class _MoodTrackerPageState extends ConsumerState<MoodTrackerPage> {
         onPressed: _showMoodEntryDialog,
         icon: const Icon(Icons.add_rounded),
         label: const Text('Catat Mood'),
+        backgroundColor: primaryColor,
       ),
     );
   }
 
-  Widget _buildAverageMoodCard(double avgMood, bool isDark) {
+  Widget _buildAverageMoodCard(double avgMood, bool isDark, Color primaryColor, ColorScheme colorScheme) {
     final emoji = MoodEntry.getEmojiForLevel(avgMood.round());
 
     return Container(
       decoration: BoxDecoration(
-        gradient: AppColors.primaryGradient,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? [primaryColor.withOpacity(0.8), colorScheme.secondary.withOpacity(0.8)]
+              : [primaryColor, colorScheme.secondary],
+        ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primaryBlue.withOpacity(0.3),
+            color: primaryColor.withOpacity(0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -301,7 +318,7 @@ class _MoodTrackerPageState extends ConsumerState<MoodTrackerPage> {
     );
   }
 
-  Widget _buildMoodItem(MoodEntry mood, bool isDark) {
+  Widget _buildMoodItem(MoodEntry mood, bool isDark, Color primaryColor) {
     final dateFormat = DateFormat('EEEE, dd MMM yyyy');
     final timeFormat = DateFormat('HH:mm');
 
@@ -382,14 +399,14 @@ class _MoodTrackerPageState extends ConsumerState<MoodTrackerPage> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryBlue.withOpacity(0.1),
+                      color: primaryColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
                       tag,
                       style: TextStyle(
                         fontSize: 10,
-                        color: AppColors.primaryBlue,
+                        color: primaryColor,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -410,7 +427,8 @@ class _MoodTrackerPageState extends ConsumerState<MoodTrackerPage> {
     );
   }
 
-  Widget _buildEmptyState(bool isDark) {
+  Widget _buildEmptyState(BuildContext context, bool isDark) {
+    final primaryColor = Theme.of(context).primaryColor;
     return Container(
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
@@ -431,13 +449,13 @@ class _MoodTrackerPageState extends ConsumerState<MoodTrackerPage> {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withOpacity(0.1),
+              color: primaryColor.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.mood_rounded,
               size: 48,
-              color: AppColors.primaryBlue.withOpacity(0.5),
+              color: primaryColor.withOpacity(0.5),
             ),
           ),
           const SizedBox(height: 20),

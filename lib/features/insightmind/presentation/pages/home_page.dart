@@ -3,39 +3,173 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/journal_provider.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/theme_toggle_widget.dart';
+import '../widgets/color_selection_widget.dart';
 import '../../../../src/app_themes.dart';
 import 'screening_page.dart';
 import 'history_page.dart';
 import 'journal_page.dart';
 import 'login_page.dart';
 import 'mood_tracker_page.dart';
+import 'profile_page.dart';
+import '../widgets/floating_navigation_bar.dart';
 
-class HomePage extends ConsumerWidget {
-  const HomePage({super.key});
+import '../providers/navigation_provider.dart';
+
+class MainPage extends ConsumerStatefulWidget {
+  const MainPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MainPage> createState() => _MainPageState();
+}
+
+class _MainPageState extends ConsumerState<MainPage> {
+  @override
+  Widget build(BuildContext context) {
+    final selectedIndex = ref.watch(navigationProvider);
+
+    return Scaffold(
+      extendBody: true,
+      body: IndexedStack(
+        index: selectedIndex,
+        children: const [
+          _HomeBody(),
+          HistoryPage(isEmbedded: true),
+          ProfilePage(isEmbedded: true),
+        ],
+      ),
+      // Modern Floating Navigation Bar
+      bottomNavigationBar: FloatingNavigationBar(
+        selectedIndex: selectedIndex,
+        items: [
+          FloatingNavItem(icon: Icons.home_rounded, label: 'Home'),
+          FloatingNavItem(icon: Icons.history_rounded, label: 'History'),
+          FloatingNavItem(icon: Icons.person_rounded, label: 'Profile'),
+        ],
+        onItemSelected: (index) {
+          ref.read(navigationProvider.notifier).state = index;
+        },
+      ),
+    );
+  }
+}
+
+
+
+class _HomeBody extends ConsumerStatefulWidget {
+  const _HomeBody();
+
+  @override
+  ConsumerState<_HomeBody> createState() => _HomeBodyState();
+}
+
+class _HomeBodyState extends ConsumerState<_HomeBody> with TickerProviderStateMixin {
+  late AnimationController _entranceController;
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _entranceController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+
+    _entranceController.forward();
+  }
+
+  @override
+  void dispose() {
+    _entranceController.dispose();
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  Widget _buildAnimatedItem(Widget child, int index) {
+    return FadeTransition(
+      opacity: _entranceController.drive(
+        CurveTween(
+          curve: Interval(
+            0.1 * index,
+            0.6 + 0.1 * index,
+            curve: Curves.easeOut,
+          ),
+        ),
+      ),
+      child: SlideTransition(
+        position: _entranceController.drive(
+          Tween<Offset>(
+            begin: const Offset(0, 0.2),
+            end: Offset.zero,
+          ).chain(
+            CurveTween(
+              curve: Interval(
+                0.1 * index,
+                0.6 + 0.1 * index,
+                curve: Curves.easeOut,
+              ),
+            ),
+          ),
+        ),
+        child: child,
+      ),
+    );
+  }
+
+  LinearGradient _getGradient(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    if (isDark) {
+      return LinearGradient(
+        colors: [
+           // Darker shade of primary for dark mode gradient start
+           Color.lerp(colorScheme.primary, Colors.black, 0.2)!, 
+           colorScheme.primary,
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
+    }
+    
+    return LinearGradient(
+      colors: [colorScheme.primary, colorScheme.secondary],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final journalAsync = ref.watch(journalListProvider);
     final authState = ref.watch(authNotifierProvider);
     final userName = authState.user?.name ?? 'User';
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
 
-    return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          // Modern App Bar with Gradient
-          SliverAppBar(
-            expandedHeight: 180,
-            floating: false,
-            pinned: true,
-            elevation: 0,
-            backgroundColor: AppColors.primaryBlue,
-            flexibleSpace: FlexibleSpaceBar(
-              background: Container(
+    return CustomScrollView(
+      slivers: [
+        // Modern App Bar with Gradient
+        SliverAppBar(
+          expandedHeight: 180,
+          floating: false,
+          pinned: true,
+          elevation: 0,
+          backgroundColor: primaryColor,
+          flexibleSpace: FlexibleSpaceBar(
+            background: _buildAnimatedItem(
+              Container(
                 decoration: BoxDecoration(
-                  gradient: isDark
-                      ? AppColors.darkGradient
-                      : AppColors.primaryGradient,
+                  gradient: _getGradient(context),
                 ),
                 child: SafeArea(
                   child: Padding(
@@ -46,31 +180,52 @@ class HomePage extends ConsumerWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Selamat Datang 👋',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.white.withOpacity(0.9),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Selamat Datang 👋',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.white.withOpacity(0.9),
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  userName,
-                                  style: const TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    userName,
+                                    style: const TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                             Row(
                               children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: IconButton(
+                                    icon: const Icon(
+                                      Icons.add_rounded,
+                                      color: Colors.white,
+                                    ),
+                                    tooltip: 'Tambah Jurnal',
+                                    onPressed: () => _HomeBodyState.showAddJournalDialog(context, ref),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                const ColorSelectionWidget(),
+                                const SizedBox(width: 8),
                                 const ThemeToggleWidget(),
-                                const SizedBox(width: 4),
+                                const SizedBox(width: 8),
                                 Container(
                                   decoration: BoxDecoration(
                                     color: Colors.white.withOpacity(0.2),
@@ -95,17 +250,20 @@ class HomePage extends ConsumerWidget {
                   ),
                 ),
               ),
+              0, // Index 0 for header
             ),
           ),
+        ),
 
-          // Content
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Quick Actions Row
+        // Content
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Quick Actions Row
+                _buildAnimatedItem(
                   Row(
                     children: [
                       Expanded(
@@ -144,27 +302,25 @@ class HomePage extends ConsumerWidget {
                           icon: Icons.history_rounded,
                           label: 'Riwayat',
                           color: const Color(0xFF8B5CF6),
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const HistoryPage(),
-                            ),
-                          ),
+                          onTap: () => ref.read(navigationProvider.notifier).state = 1,
                         ),
                       ),
                     ],
                   ),
+                  1,
+                ),
 
-                  const SizedBox(height: 24),
+                const SizedBox(height: 24),
 
-                  // Main Screening Card
+                // Main Screening Card
+                _buildAnimatedItem(
                   Container(
                     decoration: BoxDecoration(
-                      gradient: AppColors.primaryGradient,
+                      gradient: _getGradient(context),
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primaryBlue.withOpacity(0.3),
+                          color: primaryColor.withOpacity(0.3),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -218,45 +374,48 @@ class HomePage extends ConsumerWidget {
                           const Text(
                             'Mulai screening sederhana untuk memprediksi risiko kesehatan mental secara cepat dan akurat.',
                             style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.white,
-                              height: 1.5,
-                            ),
+                                fontSize: 14,
+                                color: Colors.white,
+                                height: 1.5,
+                              ),
                           ),
                           const SizedBox(height: 20),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => const ScreeningPage(),
-                                  ),
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                foregroundColor: AppColors.primaryBlue,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                              ),
-                              child: const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    'Mulai Screening',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
+                          ScaleTransition(
+                            scale: _pulseAnimation,
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) => const ScreeningPage(),
                                     ),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: primaryColor,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
                                   ),
-                                  SizedBox(width: 8),
-                                  Icon(Icons.arrow_forward_rounded),
-                                ],
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                ),
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'Mulai Screening',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    SizedBox(width: 8),
+                                    Icon(Icons.arrow_forward_rounded),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
@@ -264,140 +423,141 @@ class HomePage extends ConsumerWidget {
                       ),
                     ),
                   ),
+                  2,
+                ),
 
-                  const SizedBox(height: 24),
+                const SizedBox(height: 24),
 
-                  // Journal Section
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                // Journal Section
+                _buildAnimatedItem(
+                  Column(
                     children: [
-                      Text(
-                        'Jurnal Terbaru',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      TextButton.icon(
-                        onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const JournalPage(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Jurnal Terbaru',
+                            style: Theme.of(context).textTheme.titleLarge,
                           ),
+                          TextButton.icon(
+                            onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const JournalPage(),
+                              ),
+                            ),
+                            icon: const Text('Lihat Semua'),
+                            label: const Icon(
+                              Icons.arrow_forward_rounded,
+                              size: 18,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                  
+                      // Journal Preview Card
+                      Container(
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: isDark
+                              ? []
+                              : [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.05),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
                         ),
-                        icon: const Text('Lihat Semua'),
-                        label: const Icon(
-                          Icons.arrow_forward_rounded,
-                          size: 18,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(20),
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const JournalPage()),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: journalAsync.when(
+                              data: (journals) {
+                                if (journals.isEmpty) {
+                                  return _buildEmptyJournalState(context);
+                                }
+                                final latest = journals.first;
+                                return Row(
+                                  children: [
+                                    Container(
+                                      width: 56,
+                                      height: 56,
+                                      decoration: BoxDecoration(
+                                        color: primaryColor.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          latest.mood,
+                                          style: const TextStyle(fontSize: 28),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            latest.title,
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            latest.content,
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: isDark
+                                                  ? Colors.grey[400]
+                                                  : Colors.grey[600],
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Icon(
+                                      Icons.chevron_right_rounded,
+                                      color: Colors.grey[400],
+                                    ),
+                                  ],
+                                );
+                              },
+                              loading: () =>
+                                  const Center(child: CircularProgressIndicator()),
+                              error: (e, st) => Text('Error: $e'),
+                            ),
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-
-                  // Journal Preview Card
-                  Container(
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: isDark
-                          ? []
-                          : [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                    ),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(20),
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const JournalPage()),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: journalAsync.when(
-                          data: (journals) {
-                            if (journals.isEmpty) {
-                              return _buildEmptyJournalState(context);
-                            }
-                            final latest = journals.first;
-                            return Row(
-                              children: [
-                                Container(
-                                  width: 56,
-                                  height: 56,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primaryBlue.withOpacity(
-                                      0.1,
-                                    ),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      latest.mood,
-                                      style: const TextStyle(fontSize: 28),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        latest.title,
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        latest.content,
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          color: isDark
-                                              ? Colors.grey[400]
-                                              : Colors.grey[600],
-                                        ),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Icon(
-                                  Icons.chevron_right_rounded,
-                                  color: Colors.grey[400],
-                                ),
-                              ],
-                            );
-                          },
-                          loading: () =>
-                              const Center(child: CircularProgressIndicator()),
-                          error: (e, st) => Text('Error: $e'),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                  3,
+                ),
+                const SizedBox(height: 100), // Space for nav bar
+              ],
             ),
           ),
-        ],
-      ),
-
-      // Modern FAB
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddJournalDialog(context, ref),
-        icon: const Icon(Icons.edit_rounded),
-        label: const Text('Tulis Jurnal'),
-      ),
+        ),
+      ],
     );
   }
+
 
   Widget _buildQuickActionCard(
     BuildContext context, {
@@ -482,8 +642,7 @@ class HomePage extends ConsumerWidget {
     );
   }
 
-  /// Dialog untuk menambah jurnal baru
-  void _showAddJournalDialog(BuildContext context, WidgetRef ref) {
+  static void showAddJournalDialog(BuildContext context, WidgetRef ref) {
     final titleController = TextEditingController();
     final contentController = TextEditingController();
     String selectedMood = '😊';
@@ -512,7 +671,6 @@ class HomePage extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Handle bar
                 Center(
                   child: Container(
                     width: 40,
@@ -524,15 +682,11 @@ class HomePage extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 24),
-
-                // Title
                 const Text(
                   'Tulis Jurnal Baru ✍️',
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 24),
-
-                // Mood Selector
                 const Text(
                   'Bagaimana perasaanmu hari ini?',
                   style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
@@ -542,6 +696,8 @@ class HomePage extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: moods.map((mood) {
                     final isSelected = selectedMood == mood;
+                    final primaryColor = Theme.of(context).primaryColor;
+                    
                     return GestureDetector(
                       onTap: () => setState(() => selectedMood = mood),
                       child: AnimatedContainer(
@@ -549,12 +705,12 @@ class HomePage extends ConsumerWidget {
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? AppColors.primaryBlue.withOpacity(0.15)
+                              ? primaryColor.withOpacity(0.15)
                               : Colors.transparent,
                           borderRadius: BorderRadius.circular(14),
                           border: isSelected
                               ? Border.all(
-                                  color: AppColors.primaryBlue,
+                                  color: primaryColor,
                                   width: 2,
                                 )
                               : Border.all(color: Colors.transparent),
@@ -565,8 +721,6 @@ class HomePage extends ConsumerWidget {
                   }).toList(),
                 ),
                 const SizedBox(height: 24),
-
-                // Title Input
                 TextField(
                   controller: titleController,
                   decoration: const InputDecoration(
@@ -576,8 +730,6 @@ class HomePage extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-
-                // Content Input
                 TextField(
                   controller: contentController,
                   maxLines: 4,
@@ -592,8 +744,6 @@ class HomePage extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 28),
-
-                // Submit Button
                 SizedBox(
                   width: double.infinity,
                   child: FilledButton.icon(
@@ -603,15 +753,7 @@ class HomePage extends ConsumerWidget {
 
                       if (title.isEmpty || content.isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: const Text(
-                              'Judul dan isi tidak boleh kosong',
-                            ),
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
+                          const SnackBar(content: Text('Judul dan isi tidak boleh kosong')),
                         );
                         return;
                       }
@@ -624,16 +766,9 @@ class HomePage extends ConsumerWidget {
                       );
 
                       ref.invalidate(journalListProvider);
-
                       Navigator.pop(ctx);
-                      ScaffoldMessenger.of(ctx).showSnackBar(
-                        SnackBar(
-                          content: const Text('Jurnal berhasil disimpan! ✨'),
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Jurnal berhasil disimpan! ✨')),
                       );
                     },
                     icon: const Icon(Icons.save_rounded),
@@ -651,7 +786,6 @@ class HomePage extends ConsumerWidget {
     );
   }
 
-  /// Dialog untuk konfirmasi logout
   void _showLogoutDialog(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -660,20 +794,7 @@ class HomePage extends ConsumerWidget {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(Icons.logout_rounded, color: Colors.red),
-            ),
-            const SizedBox(width: 12),
-            const Text('Logout'),
-          ],
-        ),
+        title: const Text('Logout'),
         content: const Text('Apakah Anda yakin ingin keluar dari akun?'),
         actions: [
           TextButton(

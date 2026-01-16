@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pam_teori/features/insightmind/domain/entities/question.dart';
-import '../../../../src/app_themes.dart';
 import '../providers/questionnaire_provider.dart';
 import '../providers/score_provider.dart';
 import 'result_page.dart';
@@ -15,6 +14,10 @@ class ScreeningPage extends ConsumerWidget {
     final qState = ref.watch(questionnaireProvider);
     final notifier = ref.read(questionnaireProvider.notifier);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+    final colorScheme = Theme.of(context).colorScheme;
+    final onPrimaryColor = colorScheme.onPrimary;
+    final secondaryColor = colorScheme.secondary;
 
     final progress = questions.isEmpty
         ? 0.0
@@ -58,17 +61,17 @@ class ScreeningPage extends ConsumerWidget {
             floating: false,
             pinned: true,
             elevation: 0,
-            backgroundColor: AppColors.primaryBlue,
+            backgroundColor: primaryColor,
             leading: IconButton(
               icon: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: onPrimaryColor.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.arrow_back_rounded,
-                  color: Colors.white,
+                  color: onPrimaryColor,
                 ),
               ),
               onPressed: () => Navigator.pop(context),
@@ -76,9 +79,13 @@ class ScreeningPage extends ConsumerWidget {
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 decoration: BoxDecoration(
-                  gradient: isDark
-                      ? AppColors.darkGradient
-                      : AppColors.primaryGradient,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: isDark
+                        ? [primaryColor.withOpacity(0.8), secondaryColor.withOpacity(0.8)] // Example dark gradient
+                        : [primaryColor, secondaryColor], // Example light gradient
+                  ),
                 ),
                 child: SafeArea(
                   child: Padding(
@@ -87,12 +94,12 @@ class ScreeningPage extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        const Text(
+                        Text(
                           'Screening Kesehatan Mental',
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: onPrimaryColor,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -100,7 +107,7 @@ class ScreeningPage extends ConsumerWidget {
                           'Jawab pertanyaan dengan jujur',
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.white.withOpacity(0.9),
+                            color: onPrimaryColor.withOpacity(0.9),
                           ),
                         ),
                       ],
@@ -117,7 +124,7 @@ class ScreeningPage extends ConsumerWidget {
               margin: const EdgeInsets.all(16),
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                color: isDark ? colorScheme.surface : colorScheme.surface,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: isDark
                     ? []
@@ -138,7 +145,7 @@ class ScreeningPage extends ConsumerWidget {
                         'Progress',
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
-                          color: isDark ? Colors.white : Colors.black87,
+                          color: isDark ? onPrimaryColor : colorScheme.onSurface,
                         ),
                       ),
                       Container(
@@ -147,13 +154,13 @@ class ScreeningPage extends ConsumerWidget {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.primaryBlue.withOpacity(0.1),
+                          color: primaryColor.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           '${qState.answers.length}/${questions.length}',
-                          style: const TextStyle(
-                            color: AppColors.primaryBlue,
+                          style: TextStyle(
+                            color: primaryColor,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -167,10 +174,10 @@ class ScreeningPage extends ConsumerWidget {
                       value: progress,
                       minHeight: 10,
                       backgroundColor: isDark
-                          ? const Color(0xFF334155)
+                          ? colorScheme.onSurface.withOpacity(0.2)
                           : Colors.grey.shade200,
-                      valueColor: const AlwaysStoppedAnimation<Color>(
-                        AppColors.primaryBlue,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        primaryColor,
                       ),
                     ),
                   ),
@@ -216,6 +223,8 @@ class ScreeningPage extends ConsumerWidget {
                       onPressed: handleSubmit,
                       style: FilledButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
+                        backgroundColor: primaryColor,
+                        foregroundColor: onPrimaryColor,
                       ),
                     ),
                   ),
@@ -266,6 +275,7 @@ class _QuestionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -294,14 +304,14 @@ class _QuestionCard extends StatelessWidget {
                   width: 32,
                   height: 32,
                   decoration: BoxDecoration(
-                    color: AppColors.primaryBlue.withOpacity(0.1),
+                    color: primaryColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Center(
                     child: Text(
                       '${index + 1}',
-                      style: const TextStyle(
-                        color: AppColors.primaryBlue,
+                      style: TextStyle(
+                        color: primaryColor,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -339,14 +349,14 @@ class _QuestionCard extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         color: selectedScore == opt.score
-                            ? AppColors.primaryBlue
+                            ? primaryColor
                             : (isDark
                                   ? const Color(0xFF334155)
                                   : Colors.grey.shade100),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: selectedScore == opt.score
-                              ? AppColors.primaryBlue
+                              ? primaryColor
                               : Colors.transparent,
                           width: 2,
                         ),

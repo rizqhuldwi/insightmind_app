@@ -5,7 +5,8 @@ import '../../../../src/app_themes.dart';
 import 'history_detail_page.dart';
 
 class HistoryPage extends ConsumerWidget {
-  const HistoryPage({super.key});
+  final bool isEmbedded;
+  const HistoryPage({super.key, this.isEmbedded = false});
 
   Future<bool?> _showClearDialog(BuildContext context, bool isDark) {
     return showDialog<bool>(
@@ -48,6 +49,8 @@ class HistoryPage extends ConsumerWidget {
     final historyAsync = ref.watch(historyListProvider);
     final repo = ref.read(historyRepositoryProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       body: CustomScrollView(
@@ -58,27 +61,36 @@ class HistoryPage extends ConsumerWidget {
             floating: false,
             pinned: true,
             elevation: 0,
-            backgroundColor: AppColors.primaryBlue,
-            leading: IconButton(
-              icon: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.arrow_back_rounded,
-                  color: Colors.white,
-                ),
-              ),
-              onPressed: () => Navigator.pop(context),
-            ),
+            backgroundColor: primaryColor,
+            leading: isEmbedded
+                ? null
+                : IconButton(
+                    icon: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.arrow_back_rounded,
+                        color: Colors.white,
+                      ),
+                    ),
+                    onPressed: () => Navigator.pop(context),
+                  ),
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 decoration: BoxDecoration(
-                  gradient: isDark
-                      ? AppColors.darkGradient
-                      : AppColors.primaryGradient,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: isDark
+                        ? [
+                            Color.lerp(primaryColor, Colors.black, 0.2)!,
+                            primaryColor,
+                          ]
+                        : [primaryColor, colorScheme.secondary],
+                  ),
                 ),
                 child: SafeArea(
                   child: Padding(
@@ -117,7 +129,7 @@ class HistoryPage extends ConsumerWidget {
           historyAsync.when(
             data: (items) {
               if (items.isEmpty) {
-                return SliverFillRemaining(child: _buildEmptyState(isDark));
+                return SliverFillRemaining(child: _buildEmptyState(context, isDark));
               }
 
               return SliverPadding(
@@ -184,7 +196,8 @@ class HistoryPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildEmptyState(bool isDark) {
+  Widget _buildEmptyState(BuildContext context, bool isDark) {
+    final primaryColor = Theme.of(context).primaryColor;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -192,13 +205,13 @@ class HistoryPage extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withOpacity(0.1),
+              color: primaryColor.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.history_rounded,
               size: 64,
-              color: AppColors.primaryBlue.withOpacity(0.5),
+              color: primaryColor.withOpacity(0.5),
             ),
           ),
           const SizedBox(height: 24),

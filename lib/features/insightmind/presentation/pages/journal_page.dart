@@ -12,6 +12,8 @@ class JournalPage extends ConsumerWidget {
     final journalAsync = ref.watch(journalListProvider);
     final repo = ref.read(journalRepositoryProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       body: CustomScrollView(
@@ -22,7 +24,7 @@ class JournalPage extends ConsumerWidget {
             floating: false,
             pinned: true,
             elevation: 0,
-            backgroundColor: AppColors.primaryBlue,
+            backgroundColor: primaryColor,
             leading: IconButton(
               icon: Container(
                 padding: const EdgeInsets.all(8),
@@ -40,9 +42,16 @@ class JournalPage extends ConsumerWidget {
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 decoration: BoxDecoration(
-                  gradient: isDark
-                      ? AppColors.darkGradient
-                      : AppColors.primaryGradient,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: isDark
+                        ? [
+                            Color.lerp(primaryColor, Colors.black, 0.2)!,
+                            primaryColor,
+                          ]
+                        : [primaryColor, colorScheme.secondary],
+                  ),
                 ),
                 child: SafeArea(
                   child: Padding(
@@ -81,7 +90,7 @@ class JournalPage extends ConsumerWidget {
           journalAsync.when(
             data: (journals) {
               if (journals.isEmpty) {
-                return SliverFillRemaining(child: _buildEmptyState(isDark));
+                return SliverFillRemaining(child: _buildEmptyState(context, isDark));
               }
 
               return SliverPadding(
@@ -111,7 +120,8 @@ class JournalPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildEmptyState(bool isDark) {
+  Widget _buildEmptyState(BuildContext context, bool isDark) {
+    final primaryColor = Theme.of(context).primaryColor;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -119,13 +129,13 @@ class JournalPage extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withOpacity(0.1),
+              color: primaryColor.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.book_outlined,
               size: 64,
-              color: AppColors.primaryBlue.withOpacity(0.5),
+              color: primaryColor.withOpacity(0.5),
             ),
           ),
           const SizedBox(height: 24),
@@ -158,6 +168,8 @@ class JournalPage extends ConsumerWidget {
     dynamic repo,
     bool isDark,
   ) {
+    final primaryColor = Theme.of(context).primaryColor;
+    
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -186,7 +198,7 @@ class JournalPage extends ConsumerWidget {
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  color: AppColors.primaryBlue.withOpacity(0.1),
+                  color: primaryColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Center(
@@ -281,7 +293,7 @@ class JournalPage extends ConsumerWidget {
                     value: 'edit',
                     child: Row(
                       children: [
-                        Icon(Icons.edit_rounded, color: AppColors.primaryBlue),
+                        Icon(Icons.edit_rounded, color: primaryColor),
                         const SizedBox(width: 8),
                         const Text('Edit'),
                       ],
@@ -363,6 +375,7 @@ class JournalPage extends ConsumerWidget {
     JournalEntry journal,
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
 
     showModalBottomSheet(
       context: context,
@@ -402,7 +415,7 @@ class JournalPage extends ConsumerWidget {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryBlue.withOpacity(0.1),
+                        color: primaryColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Text(
@@ -531,6 +544,7 @@ class JournalPage extends ConsumerWidget {
     final contentController = TextEditingController(text: journal.content);
     String selectedMood = journal.mood;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
 
     final moods = ['😊', '😌', '😐', '😢', '😰', '😡'];
 
@@ -592,12 +606,12 @@ class JournalPage extends ConsumerWidget {
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? AppColors.primaryBlue.withOpacity(0.15)
+                              ? primaryColor.withOpacity(0.15)
                               : Colors.transparent,
                           borderRadius: BorderRadius.circular(14),
                           border: isSelected
                               ? Border.all(
-                                  color: AppColors.primaryBlue,
+                                  color: primaryColor,
                                   width: 2,
                                 )
                               : Border.all(color: Colors.transparent),

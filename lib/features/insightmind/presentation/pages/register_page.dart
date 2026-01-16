@@ -61,12 +61,16 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F8FC),
+      backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF7F8FC),
       appBar: AppBar(
         title: const Text('Daftar Akun'),
-        backgroundColor: Colors.indigo,
-        foregroundColor: Colors.white,
+        backgroundColor: primaryColor,
+        foregroundColor: colorScheme.onPrimary,
         centerTitle: true,
       ),
       body: SafeArea(
@@ -78,10 +82,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // Header
-                const Icon(
+                Icon(
                   Icons.person_add_outlined,
                   size: 60,
-                  color: Colors.indigo,
+                  color: primaryColor,
                 ),
                 const SizedBox(height: 16),
                 const Text(
@@ -95,7 +99,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 const SizedBox(height: 8),
                 Text(
                   'Isi data di bawah untuk mendaftar',
-                  style: TextStyle(color: Colors.grey[600]),
+                  style: TextStyle(
+                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
@@ -112,7 +118,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: isDark ? const Color(0xFF1E293B) : Colors.white,
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
@@ -137,7 +143,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: isDark ? const Color(0xFF1E293B) : Colors.white,
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
@@ -174,7 +180,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: isDark ? const Color(0xFF1E293B) : Colors.white,
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -209,7 +215,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: isDark ? const Color(0xFF1E293B) : Colors.white,
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -227,14 +233,18 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 SizedBox(
                   height: 50,
                   child: FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      foregroundColor: colorScheme.onPrimary,
+                    ),
                     onPressed: _isLoading ? null : _handleRegister,
                     child: _isLoading
-                        ? const SizedBox(
+                        ? SizedBox(
                             width: 24,
                             height: 24,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Colors.white,
+                              color: colorScheme.onPrimary,
                             ),
                           )
                         : const Text(
@@ -251,13 +261,18 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   children: [
                     Text(
                       'Sudah punya akun? ',
-                      style: TextStyle(color: Colors.grey[600]),
+                      style: TextStyle(
+                        color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      ),
                     ),
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: const Text(
+                      child: Text(
                         'Masuk',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: primaryColor,
+                        ),
                       ),
                     ),
                   ],

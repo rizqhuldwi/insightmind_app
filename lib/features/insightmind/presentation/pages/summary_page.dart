@@ -94,6 +94,9 @@ class SummaryPage extends ConsumerWidget {
     final questions = ref.watch(questionsProvider);
     final formState = ref.watch(questionnaireProvider);
     final answers = formState.answers;
+    
+    final primaryColor = Theme.of(context).primaryColor;
+    final colorScheme = Theme.of(context).colorScheme;
 
     final totalQuestions = questions.length;
     final answeredQuestions = answers.length;
@@ -113,8 +116,8 @@ class SummaryPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Ringkasan Jawaban'),
-        backgroundColor: Colors.indigo,
-        foregroundColor: Colors.white,
+        backgroundColor: primaryColor,
+        foregroundColor: colorScheme.onPrimary,
       ),
       body: Column(
         children: [
@@ -127,12 +130,12 @@ class SummaryPage extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.indigo.withAlpha(25),
+                    color: primaryColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.info, color: Colors.indigo),
+                      Icon(Icons.info, color: primaryColor),
                       const SizedBox(width: 10),
                       const Flexible(
                         child: Text(
@@ -154,7 +157,7 @@ class SummaryPage extends ConsumerWidget {
                 LinearProgressIndicator(
                   value: progress,
                   backgroundColor: Colors.grey[300],
-                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.indigo),
+                  valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
                 ),
                 const SizedBox(height: 16),
 
@@ -164,14 +167,14 @@ class SummaryPage extends ConsumerWidget {
                     Chip(
                       label: Text('$totalQuestions Total Pertanyaan'),
                       avatar: CircleAvatar(child: Text('$totalQuestions')),
-                      backgroundColor: Colors.indigo.withAlpha(25),
-                      labelStyle: TextStyle(color: Colors.indigo[800]),
+                      backgroundColor: primaryColor.withOpacity(0.1),
+                      labelStyle: TextStyle(color: primaryColor),
                     ),
                     const SizedBox(width: 8),
                     Chip(
                       label: Text('$answeredQuestions Dijawab'),
                       avatar: CircleAvatar(child: Text('$answeredQuestions')),
-                      backgroundColor: Colors.green.withAlpha(25),
+                      backgroundColor: Colors.green.withOpacity(0.1),
                       labelStyle: TextStyle(color: Colors.green[800]),
                     ),
                   ],
@@ -206,7 +209,7 @@ class SummaryPage extends ConsumerWidget {
                         height: 30,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.indigo,
+                          color: primaryColor,
                         ),
                         alignment: Alignment.center,
                         child: Text(
@@ -242,7 +245,8 @@ class SummaryPage extends ConsumerWidget {
         child: FilledButton(
           onPressed: handleSubmit,
           style: FilledButton.styleFrom(
-            backgroundColor: Colors.indigo,
+            backgroundColor: primaryColor,
+            foregroundColor: colorScheme.onPrimary,
             padding: const EdgeInsets.symmetric(vertical: 14),
           ),
           child: const Text('Lihat Hasil'),

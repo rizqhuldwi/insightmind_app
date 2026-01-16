@@ -36,6 +36,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       _passwordController.text,
     );
 
+    if (!mounted) return;
     setState(() => _isLoading = false);
 
     if (success && mounted) {
@@ -45,7 +46,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           MaterialPageRoute(
             builder: (_) => user.isAdmin 
                 ? const AdminDashboardPage() 
-                : const HomePage(),
+                : const MainPage(),
           ),
         );
       }
@@ -61,8 +62,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F8FC),
+      backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF7F8FC),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -76,24 +81,24 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.indigo.withAlpha(25),
+                      color: primaryColor.withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.psychology_alt,
                       size: 80,
-                      color: Colors.indigo,
+                      color: primaryColor,
                     ),
                   ),
                   const SizedBox(height: 24),
 
                   // Title
-                  const Text(
+                  Text(
                     'InsightMind',
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Colors.indigo,
+                      color: primaryColor,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -101,7 +106,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     'Masuk ke akun Anda',
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.grey[600],
+                      color: isDark ? Colors.grey[400] : Colors.grey[600],
                     ),
                   ),
                   const SizedBox(height: 40),
@@ -117,7 +122,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: isDark ? const Color(0xFF1E293B) : Colors.white,
                     ),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
@@ -149,7 +154,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: isDark ? const Color(0xFF1E293B) : Colors.white,
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -165,14 +170,18 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     width: double.infinity,
                     height: 50,
                     child: FilledButton(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        foregroundColor: colorScheme.onPrimary,
+                      ),
                       onPressed: _isLoading ? null : _handleLogin,
                       child: _isLoading
-                          ? const SizedBox(
+                          ? SizedBox(
                               width: 24,
                               height: 24,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: Colors.white,
+                                color: colorScheme.onPrimary,
                               ),
                             )
                           : const Text(
@@ -189,7 +198,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     children: [
                       Text(
                         'Belum punya akun? ',
-                        style: TextStyle(color: Colors.grey[600]),
+                        style: TextStyle(
+                          color: isDark ? Colors.grey[400] : Colors.grey[600],
+                        ),
                       ),
                       TextButton(
                         onPressed: () {
@@ -197,9 +208,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             MaterialPageRoute(builder: (_) => const RegisterPage()),
                           );
                         },
-                        child: const Text(
+                        child: Text(
                           'Daftar',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: primaryColor,
+                          ),
                         ),
                       ),
                     ],

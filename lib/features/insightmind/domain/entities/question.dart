@@ -1,13 +1,24 @@
+import 'package:hive/hive.dart';
+
+part 'question.g.dart';
+
+@HiveType(typeId: 10)
 class AnswerOption {
+  @HiveField(0)
   final String label; // contoh: "Tidak Pernah", "Beberapa Hari", ...
+  @HiveField(1)
   final int score; // 0..3
 
   const AnswerOption({required this.label, required this.score});
 }
 
+@HiveType(typeId: 11)
 class Question {
+  @HiveField(0)
   final String id;
+  @HiveField(1)
   final String text;
+  @HiveField(2)
   final List<AnswerOption> options;
 
   const Question({required this.id, required this.text, required this.options});

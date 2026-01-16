@@ -50,6 +50,8 @@ class _ResultPageState extends ConsumerState<ResultPage> {
   Widget build(BuildContext context) {
     final result = ref.watch(resultProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
+    final colorScheme = Theme.of(context).colorScheme;
 
     String recommendation;
     IconData riskIcon;
@@ -83,7 +85,16 @@ class _ResultPageState extends ConsumerState<ResultPage> {
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
-          gradient: isDark ? AppColors.darkGradient : AppColors.primaryGradient,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: isDark
+                ? [
+                    Color.lerp(primaryColor, Colors.black, 0.2)!,
+                    primaryColor,
+                  ]
+                : [primaryColor, colorScheme.secondary],
+          ),
         ),
         child: SafeArea(
           child: Column(
@@ -229,7 +240,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                           children: [
                             Icon(
                               Icons.lightbulb_outline_rounded,
-                              color: AppColors.primaryBlue,
+                              color: primaryColor,
                               size: 28,
                             ),
                             const SizedBox(height: 8),
@@ -256,7 +267,7 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                           Icon(
                             Icons.check_circle_rounded,
                             size: 16,
-                            color: AppColors.primaryBlue,
+                            color: primaryColor,
                           ),
                           const SizedBox(width: 6),
                           Text(
@@ -282,6 +293,8 @@ class _ResultPageState extends ConsumerState<ResultPage> {
                           icon: const Icon(Icons.home_rounded),
                           label: const Text('Kembali ke Beranda'),
                           style: FilledButton.styleFrom(
+                            backgroundColor: primaryColor,
+                            foregroundColor: colorScheme.onPrimary,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
                         ),

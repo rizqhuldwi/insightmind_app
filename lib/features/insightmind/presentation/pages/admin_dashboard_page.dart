@@ -2,382 +2,243 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/theme_toggle_widget.dart';
-import '../../../../src/app_themes.dart';
+import '../widgets/color_selection_widget.dart';
 import '../../data/local/user.dart';
 import '../../data/local/screening_record.dart';
 import 'login_page.dart';
+import 'manage_questions_page.dart';
+import '../providers/questionnaire_provider.dart';
+import '../../domain/entities/question.dart';
 
 class AdminDashboardPage extends ConsumerWidget {
   const AdminDashboardPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final allUsersAsync = ref.watch(allUsersProvider);
     final authState = ref.watch(authNotifierProvider);
     final adminName = authState.user?.name ?? 'Admin';
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
 
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          // Modern App Bar with Gradient
+          // Header matching screenshot
           SliverAppBar(
-            expandedHeight: 180,
+            expandedHeight: 120,
             floating: false,
             pinned: true,
             elevation: 0,
-            backgroundColor: AppColors.primaryBlue,
+            backgroundColor: primaryColor,
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
-                decoration: BoxDecoration(
-                  gradient: isDark
-                      ? AppColors.darkGradient
-                      : AppColors.primaryGradient,
-                ),
-                child: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                color: primaryColor,
+                padding: const EdgeInsets.fromLTRB(20, 40, 20, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Dashboard Admin',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.white.withOpacity(0.8),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
+                        Text(
+                          adminName,
+                          style: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Selamat Datang 👋',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.white.withOpacity(0.9),
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  adminName,
-                                  style: const TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                const ThemeToggleWidget(),
-                                const SizedBox(width: 4),
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.2),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: IconButton(
-                                    icon: const Icon(
-                                      Icons.logout_rounded,
-                                      color: Colors.white,
-                                    ),
-                                    tooltip: 'Logout',
-                                    onPressed: () =>
-                                        _showLogoutDialog(context, ref),
-                                  ),
-                                ),
-                              ],
+                            const ColorSelectionWidget(),
+                            const SizedBox(width: 8),
+                            const ThemeToggleWidget(),
+                            IconButton(
+                              icon: const Icon(Icons.logout_rounded, color: Colors.white),
+                              onPressed: () => _showLogoutDialog(context, ref),
                             ),
                           ],
                         ),
                       ],
                     ),
-                  ),
+                  ],
                 ),
               ),
             ),
           ),
 
-          // Content
+          // Question List section
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  allUsersAsync.when(
-                    loading: () => const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(32),
-                        child: CircularProgressIndicator(),
+                  Row(
+                    children: [
+                      Icon(Icons.assignment_outlined, color: primaryColor, size: 24),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Daftar Pertanyaan Screening',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey[600],
+                        ),
                       ),
-                    ),
-                    error: (e, st) => Center(child: Text('Error: $e')),
-                    data: (users) {
-                      // Filter hanya user biasa (bukan admin)
-                      final regularUsers = users
-                          .where((u) => u.role != 'admin')
-                          .toList();
-
-                      if (regularUsers.isEmpty) {
-                        return _buildEmptyState();
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  // Question List
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final questions = ref.watch(questionsProvider);
+                      if (questions.isEmpty) {
+                        return Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 20),
+                            child: Column(
+                              children: [
+                                Icon(Icons.assignment_add, size: 64, color: Colors.grey[300]),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Belum ada pertanyaan',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey[600],
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                OutlinedButton.icon(
+                                  onPressed: () => ManageQuestionsPage.showQuestionDialog(context, ref),
+                                  icon: const Icon(Icons.add),
+                                  label: const Text('Tambah Pertanyaan Pertama'),
+                                  style: OutlinedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
                       }
-
                       return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildHeader(regularUsers.length),
-                          const SizedBox(height: 16),
-                          _buildSummaryStats(regularUsers),
-                          const SizedBox(height: 20),
-                          ...regularUsers.map((user) => _UserCard(user: user)),
-                        ],
+                        children: questions.map((q) => _AdminQuestionCard(
+                          question: q,
+                          index: questions.indexOf(q) + 1,
+                        )).toList(),
                       );
                     },
                   ),
+                  const SizedBox(height: 100), // Space for FAB
                 ],
               ),
             ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withAlpha(30),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.people_outline,
-              size: 80,
-              color: AppColors.primaryBlue,
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Belum ada user terdaftar',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[800],
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'User yang mendaftar akan muncul di sini',
-            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeader(int userCount) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Daftar User Terdaftar',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey[800],
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '$userCount user terdaftar',
-            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSummaryStats(List<User> users) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: AppColors.primaryGradient,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primaryBlue.withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _buildStatCard('Total User', users.length.toString(), Icons.people),
-          _buildStatCard('Aktif', '${users.length}', Icons.check_circle),
-          _buildStatCard(
-            'Screening',
-            '${_getTotalScreenings(users)}',
-            Icons.assessment,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatCard(String label, String value, IconData icon) {
-    return Column(
-      children: [
-        Icon(icon, color: Colors.white, size: 24),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => ManageQuestionsPage.showQuestionDialog(context, ref),
+        backgroundColor: primaryColor,
+        elevation: 4,
+        icon: const Icon(Icons.add, color: Colors.white),
+        label: const Text(
+          'Tambah Soal', 
+          style: TextStyle(
+            color: Colors.white, 
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
           ),
         ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: const TextStyle(fontSize: 12, color: Colors.white70),
-        ),
-      ],
-    );
-  }
-
-  int _getTotalScreenings(List<User> users) {
-    // Placeholder for total screenings across all users
-    // In production, this would aggregate screening records from Hive
-    return users.length; // Simplified for now
-  }
-
-  void _showLogoutDialog(BuildContext context, WidgetRef ref) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Logout'),
-        content: const Text('Apakah Anda yakin ingin keluar?'),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Batal'),
-          ),
-          FilledButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              await ref.read(authNotifierProvider.notifier).logout();
-              if (context.mounted) {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (_) => const LoginPage()),
-                );
-              }
-            },
-            child: const Text('Logout'),
-          ),
-        ],
       ),
     );
   }
 }
 
-/// Widget card untuk setiap user
-class _UserCard extends ConsumerStatefulWidget {
-  final User user;
+class _AdminQuestionCard extends StatefulWidget {
+  final Question question;
+  final int index;
 
-  const _UserCard({required this.user});
+  const _AdminQuestionCard({required this.question, required this.index});
 
   @override
-  ConsumerState<_UserCard> createState() => _UserCardState();
+  State<_AdminQuestionCard> createState() => _AdminQuestionCardState();
 }
 
-class _UserCardState extends ConsumerState<_UserCard> {
+class _AdminQuestionCardState extends State<_AdminQuestionCard> {
   bool _isExpanded = false;
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).primaryColor;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8F9FA),
         borderRadius: BorderRadius.circular(20),
-        boxShadow: isDark
-            ? []
-            : [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+        boxShadow: isDark ? [] : [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         children: [
-          // User Info Header
+          // Header
           InkWell(
+            onTap: () => setState(() => _isExpanded = !_isExpanded),
             borderRadius: BorderRadius.circular(20),
-            onTap: () {
-              setState(() => _isExpanded = !_isExpanded);
-            },
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Avatar
+                  // Number badge
                   Container(
-                    width: 56,
-                    height: 56,
+                    width: 32,
+                    height: 32,
                     decoration: BoxDecoration(
-                      gradient: AppColors.primaryGradient,
-                      borderRadius: BorderRadius.circular(16),
+                      color: primaryColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     child: Center(
                       child: Text(
-                        widget.user.name.isNotEmpty
-                            ? widget.user.name[0].toUpperCase()
-                            : '?',
-                        style: const TextStyle(
-                          color: Colors.white,
+                        '${widget.index}',
+                        style: TextStyle(
+                          color: primaryColor,
                           fontWeight: FontWeight.bold,
-                          fontSize: 24,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  // User Details
+                  const SizedBox(width: 16),
+                  // Question Text
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.user.name,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '@${widget.user.username}',
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      widget.question.text,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        height: 1.4,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
                     ),
                   ),
-                  // Expand Icon
+                  const SizedBox(width: 8),
                   Icon(
                     _isExpanded ? Icons.expand_less : Icons.expand_more,
                     color: Colors.grey,
@@ -386,191 +247,148 @@ class _UserCardState extends ConsumerState<_UserCard> {
               ),
             ),
           ),
-
-          // Expanded Screening Details
-          if (_isExpanded) _buildScreeningDetails(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildScreeningDetails() {
-    final screeningAsync = ref.watch(
-      userScreeningRecordsProvider(widget.user.id),
-    );
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF0F172A) : Colors.grey[50],
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(20),
-          bottomRight: Radius.circular(20),
-        ),
-      ),
-      child: screeningAsync.when(
-        loading: () => const Center(
-          child: Padding(
-            padding: EdgeInsets.all(16),
-            child: CircularProgressIndicator(),
-          ),
-        ),
-        error: (e, st) => Text('Error: $e'),
-        data: (records) {
-          if (records.isEmpty) {
-            return Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.orange.withAlpha(20),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
+          
+          // Expanded Content
+          if (_isExpanded) ...[
+            const Divider(height: 1, indent: 20, endIndent: 20),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
                 children: [
-                  Icon(Icons.warning_amber, color: Colors.orange[700]),
-                  const SizedBox(width: 12),
-                  const Text('Belum melakukan screening'),
+                  ...widget.question.options.map((opt) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.check_circle_outline, size: 20, color: Colors.grey[400]),
+                            const SizedBox(width: 12),
+                            Text(
+                              opt.label,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: isDark ? Colors.white70 : Colors.black54,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: primaryColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            'Skor: ${opt.score}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: primaryColor,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )),
+                  const SizedBox(height: 20),
+                  // Action Buttons matching screenshot
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Consumer(
+                        builder: (context, ref, child) => OutlinedButton.icon(
+                          onPressed: () => ManageQuestionsPage.showQuestionDialog(context, ref, widget.question),
+                          icon: const Icon(Icons.edit_outlined, size: 18),
+                          label: const Text('Edit'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: primaryColor,
+                            side: BorderSide(color: primaryColor),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Consumer(
+                        builder: (context, ref, child) => TextButton.icon(
+                          onPressed: () => _confirmDelete(context, ref),
+                          icon: const Icon(Icons.delete_outline, size: 18, color: Colors.redAccent),
+                          label: const Text('Hapus', style: TextStyle(color: Colors.redAccent)),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
-            );
-          }
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Summary Stats
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  gradient: AppColors.primaryGradient,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildStatItem('Total Screening', '${records.length}'),
-                    _buildStatItem('Score Terakhir', '${records.first.score}'),
-                    _buildStatItem('Level', records.first.riskLevel),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Recent Screenings Header
-              const Text(
-                'Riwayat Screening:',
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-              ),
-              const SizedBox(height: 12),
-
-              // Recent Screenings List
-              ...records.take(5).map((record) => _buildScreeningItem(record)),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildStatItem(String label, String value) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-            color: Colors.white,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: const TextStyle(fontSize: 12, color: Colors.white70),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildScreeningItem(ScreeningRecord record) {
-    Color riskColor;
-    Color riskBgColor;
-    switch (record.riskLevel.toLowerCase()) {
-      case 'rendah':
-        riskColor = const Color(0xFF10B981);
-        riskBgColor = const Color(0xFF10B981).withAlpha(20);
-        break;
-      case 'sedang':
-        riskColor = const Color(0xFFF59E0B);
-        riskBgColor = const Color(0xFFF59E0B).withAlpha(20);
-        break;
-      case 'tinggi':
-        riskColor = const Color(0xFFEF4444);
-        riskBgColor = const Color(0xFFEF4444).withAlpha(20);
-        break;
-      default:
-        riskColor = Colors.grey;
-        riskBgColor = Colors.grey.withAlpha(20);
-    }
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: riskBgColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: riskColor.withAlpha(50)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 4,
-            height: 40,
-            decoration: BoxDecoration(
-              color: riskColor,
-              borderRadius: BorderRadius.circular(2),
             ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _formatDate(record.timestamp),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 13,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Score: ${record.score} • ${record.riskLevel}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: riskColor,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          ],
         ],
       ),
     );
   }
 
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final diff = now.difference(date);
-
-    if (diff.inDays == 0) {
-      return 'Hari ini, ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-    } else if (diff.inDays == 1) {
-      return 'Kemarin, ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-    } else {
-      return '${date.day}/${date.month}/${date.year}';
-    }
+  void _confirmDelete(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Hapus Pertanyaan'),
+        content: const Text('Apakah Anda yakin ingin menghapus pertanyaan ini?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Batal')),
+          FilledButton(
+            onPressed: () async {
+              final repo = ref.read(questionRepositoryProvider);
+              await repo.deleteQuestion(widget.question.id);
+              ref.read(questionsProvider.notifier).state = repo.getQuestions();
+              if (context.mounted) {
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Pertanyaan berhasil dihapus'),
+                    backgroundColor: Colors.redAccent,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              }
+            },
+            style: FilledButton.styleFrom(backgroundColor: Colors.redAccent),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
   }
+}
+
+void _showLogoutDialog(BuildContext context, WidgetRef ref) {
+  showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: const Text('Logout'),
+      content: const Text('Apakah Anda yakin ingin keluar?'),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx),
+          child: const Text('Batal'),
+        ),
+        FilledButton(
+          onPressed: () async {
+            Navigator.pop(ctx);
+            await ref.read(authNotifierProvider.notifier).logout();
+            if (context.mounted) {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const LoginPage()),
+              );
+            }
+          },
+          child: const Text('Logout'),
+        ),
+      ],
+    ),
+  );
 }
