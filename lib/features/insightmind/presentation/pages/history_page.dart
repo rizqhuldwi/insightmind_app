@@ -275,16 +275,18 @@ class HistoryPage extends ConsumerWidget {
                 ),
               ],
       ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => HistoryDetailPage(record: record),
-            ),
-          );
-        },
-        child: Padding(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => HistoryDetailPage(record: record),
+              ),
+            );
+          },
+          child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
@@ -383,6 +385,7 @@ class HistoryPage extends ConsumerWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }

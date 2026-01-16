@@ -76,7 +76,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                         color: Colors.white.withOpacity(0.2),
                         shape: BoxShape.circle,
                         boxShadow: [
-                          BoxShadow(
+                            BoxShadow(
                             color: Colors.black.withOpacity(0.1),
                             blurRadius: 20,
                             offset: const Offset(0, 10),
