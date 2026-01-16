@@ -6,7 +6,6 @@ import '../../../../src/app_themes.dart';
 import '../providers/score_provider.dart';
 import '../providers/questionnaire_provider.dart';
 import '../providers/auth_provider.dart';
-import '../providers/admin_settings_provider.dart';
 
 class ResultPage extends ConsumerStatefulWidget {
   const ResultPage({super.key});
@@ -51,7 +50,6 @@ class _ResultPageState extends ConsumerState<ResultPage> {
   Widget build(BuildContext context) {
     final result = ref.watch(resultProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final settings = ref.watch(adminSettingsProvider);
 
     String recommendation;
     IconData riskIcon;
@@ -60,19 +58,22 @@ class _ResultPageState extends ConsumerState<ResultPage> {
 
     switch (result.riskLevel) {
       case 'Tinggi':
-        recommendation = settings.highRiskRecommendation;
+        recommendation =
+            'Pertimbangkan untuk berbicara dengan konselor atau psikolog profesional. Kesehatan mental Anda sangat penting.';
         riskIcon = Icons.warning_rounded;
         riskColor = const Color(0xFFEF4444);
         riskEmoji = '😟';
         break;
       case 'Sedang':
-        recommendation = settings.mediumRiskRecommendation;
+        recommendation =
+            'Kurangi beban, istirahat cukup, dan pertimbangkan untuk menghubungi layanan konseling kampus.';
         riskIcon = Icons.info_rounded;
         riskColor = const Color(0xFFF59E0B);
         riskEmoji = '😐';
         break;
       default:
-        recommendation = settings.lowRiskRecommendation;
+        recommendation =
+            'Pertahankan kebiasaan baik Anda! Tetap jaga pola tidur, makan sehat, dan olahraga teratur.';
         riskIcon = Icons.check_circle_rounded;
         riskColor = const Color(0xFF10B981);
         riskEmoji = '😊';

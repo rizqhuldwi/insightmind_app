@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../widgets/animations.dart';
 import 'package:pam_teori/features/insightmind/presentation/providers/history_provider.dart';
 import '../../../../src/app_themes.dart';
 import 'history_detail_page.dart';
@@ -60,7 +59,20 @@ class HistoryPage extends ConsumerWidget {
             pinned: true,
             elevation: 0,
             backgroundColor: AppColors.primaryBlue,
-            automaticallyImplyLeading: false,
+            leading: IconButton(
+              icon: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.arrow_back_rounded,
+                  color: Colors.white,
+                ),
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 decoration: BoxDecoration(
@@ -76,63 +88,20 @@ class HistoryPage extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.history_rounded,
-                                  color: Colors.white,
-                                  size: 28,
-                                ),
-                                const SizedBox(width: 12),
-                                const Text(
-                                  'Riwayat Screening',
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
+                            const Icon(
+                              Icons.history_rounded,
+                              color: Colors.white,
+                              size: 28,
                             ),
-                            historyAsync.maybeWhen(
-                              data: (items) => items.isNotEmpty
-                                  ? IconButton(
-                                      icon: const Icon(
-                                        Icons.delete_sweep_rounded,
-                                        color: Colors.white,
-                                      ),
-                                      tooltip: 'Bersihkan Riwayat',
-                                      onPressed: () async {
-                                        final ok = await _showClearDialog(
-                                          context,
-                                          isDark,
-                                        );
-
-                                        if (ok == true) {
-                                          await repo.clearAll();
-                                          ref.invalidate(historyListProvider);
-                                          if (!context.mounted) return;
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            SnackBar(
-                                              content: const Text(
-                                                'Semua riwayat dikosongkan.',
-                                              ),
-                                              behavior:
-                                                  SnackBarBehavior.floating,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(10),
-                                              ),
-                                            ),
-                                          );
-                                        }
-                                      },
-                                    )
-                                  : const SizedBox.shrink(),
-                              orElse: () => const SizedBox.shrink(),
+                            const SizedBox(width: 12),
+                            const Text(
+                              'Riwayat Screening',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
                           ],
                         ),
@@ -156,15 +125,12 @@ class HistoryPage extends ConsumerWidget {
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate((context, index) {
                     final record = items[index];
-                    return AnimationDelay(
-                      delay: Duration(milliseconds: 100 * index),
-                      child: _buildHistoryCard(
-                        context,
-                        ref,
-                        record,
-                        repo,
-                        isDark,
-                      ),
+                    return _buildHistoryCard(
+                      context,
+                      ref,
+                      record,
+                      repo,
+                      isDark,
                     );
                   }, childCount: items.length),
                 ),
@@ -176,14 +142,45 @@ class HistoryPage extends ConsumerWidget {
             error: (e, st) =>
                 SliverFillRemaining(child: Center(child: Text('Error: $e'))),
           ),
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 110),
-          ),
         ],
       ),
 
       // Clear All Button
-      bottomNavigationBar: null,
+      bottomNavigationBar: historyAsync.maybeWhen(
+        data: (items) {
+          if (items.isEmpty) return null;
+
+          return SafeArea(
+            minimum: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            child: FilledButton.tonalIcon(
+              icon: const Icon(Icons.delete_sweep_rounded),
+              label: const Text('Kosongkan Semua Riwayat'),
+              onPressed: () async {
+                final ok = await _showClearDialog(context, isDark);
+
+                if (ok == true) {
+                  await repo.clearAll();
+                  ref.invalidate(historyListProvider);
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Semua riwayat dikosongkan.'),
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  );
+                }
+              },
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+            ),
+          );
+        },
+        orElse: () => null,
+      ),
     );
   }
 

@@ -4,15 +4,11 @@ import '../providers/journal_provider.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/theme_toggle_widget.dart';
 import '../../../../src/app_themes.dart';
-import '../providers/admin_settings_provider.dart';
 import 'screening_page.dart';
 import 'history_page.dart';
 import 'journal_page.dart';
 import 'login_page.dart';
 import 'mood_tracker_page.dart';
-import 'profile_page.dart';
-import '../widgets/breathing_widget.dart';
-import '../widgets/animations.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -73,8 +69,8 @@ class HomePage extends ConsumerWidget {
                             ),
                             Row(
                               children: [
-                                ThemeToggleWidget(),
-                                const SizedBox(width: 8),
+                                const ThemeToggleWidget(),
+                                const SizedBox(width: 4),
                                 Container(
                                   decoration: BoxDecoration(
                                     color: Colors.white.withOpacity(0.2),
@@ -82,12 +78,12 @@ class HomePage extends ConsumerWidget {
                                   ),
                                   child: IconButton(
                                     icon: const Icon(
-                                      Icons.edit_note_rounded,
+                                      Icons.logout_rounded,
                                       color: Colors.white,
                                     ),
-                                    tooltip: 'Tulis Jurnal',
+                                    tooltip: 'Logout',
                                     onPressed: () =>
-                                        _showAddJournalDialog(context, ref),
+                                        _showLogoutDialog(context, ref),
                                   ),
                                 ),
                               ],
@@ -110,309 +106,295 @@ class HomePage extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Quick Actions Row
-                  AnimationDelay(
-                    delay: const Duration(milliseconds: 100),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: _buildQuickActionCard(
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildQuickActionCard(
+                          context,
+                          icon: Icons.mood_rounded,
+                          label: 'Mood',
+                          color: const Color(0xFF10B981),
+                          onTap: () => Navigator.push(
                             context,
-                            icon: Icons.mood_rounded,
-                            label: 'Mood',
-                            color: const Color(0xFF10B981),
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const MoodTrackerPage(),
-                              ),
+                            MaterialPageRoute(
+                              builder: (_) => const MoodTrackerPage(),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildQuickActionCard(
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildQuickActionCard(
+                          context,
+                          icon: Icons.book_rounded,
+                          label: 'Jurnal',
+                          color: const Color(0xFFF59E0B),
+                          onTap: () => Navigator.push(
                             context,
-                            icon: Icons.book_rounded,
-                            label: 'Jurnal',
-                            color: const Color(0xFFF59E0B),
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const JournalPage(),
-                              ),
+                            MaterialPageRoute(
+                              builder: (_) => const JournalPage(),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildQuickActionCard(
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildQuickActionCard(
+                          context,
+                          icon: Icons.history_rounded,
+                          label: 'Riwayat',
+                          color: const Color(0xFF8B5CF6),
+                          onTap: () => Navigator.push(
                             context,
-                            icon: Icons.history_rounded,
-                            label: 'Riwayat',
-                            color: const Color(0xFF8B5CF6),
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const HistoryPage(),
-                              ),
+                            MaterialPageRoute(
+                              builder: (_) => const HistoryPage(),
                             ),
                           ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Main Screening Card
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: AppColors.primaryGradient,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primaryBlue.withOpacity(0.3),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
                         ),
                       ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: const Icon(
+                                  Icons.psychology_rounded,
+                                  size: 32,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              const Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'InsightMind',
+                                      style: TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Kesehatan Mental',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.white70,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                          const Text(
+                            'Mulai screening sederhana untuk memprediksi risiko kesehatan mental secara cepat dan akurat.',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.white,
+                              height: 1.5,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const ScreeningPage(),
+                                  ),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor: AppColors.primaryBlue,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                              ),
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'Mulai Screening',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Icon(Icons.arrow_forward_rounded),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
 
                   const SizedBox(height: 24),
-                  const AnimationDelay(
-                    delay: Duration(milliseconds: 300),
-                    child: BreathingMeditationWidget(),
-                  ),
-                  const SizedBox(height: 24), // Main Screening Card
 
-                  AnimationDelay(
-                    delay: const Duration(milliseconds: 500),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        gradient: AppColors.primaryGradient,
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primaryBlue.withOpacity(0.3),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
+                  // Journal Section
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Jurnal Terbaru',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      TextButton.icon(
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const JournalPage(),
                           ),
-                        ],
+                        ),
+                        icon: const Text('Lihat Semua'),
+                        label: const Icon(
+                          Icons.arrow_forward_rounded,
+                          size: 18,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Journal Preview Card
+                  Container(
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: isDark
+                          ? []
+                          : [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                    ),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const JournalPage()),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
+                        padding: const EdgeInsets.all(20),
+                        child: journalAsync.when(
+                          data: (journals) {
+                            if (journals.isEmpty) {
+                              return _buildEmptyJournalState(context);
+                            }
+                            final latest = journals.first;
+                            return Row(
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.all(12),
+                                  width: 56,
+                                  height: 56,
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.2),
+                                    color: AppColors.primaryBlue.withOpacity(
+                                      0.1,
+                                    ),
                                     borderRadius: BorderRadius.circular(16),
                                   ),
-                                  child: const Icon(
-                                    Icons.psychology_rounded,
-                                    size: 32,
-                                    color: Colors.white,
+                                  child: Center(
+                                    child: Text(
+                                      latest.mood,
+                                      style: const TextStyle(fontSize: 28),
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'InsightMind',
-                                        style: TextStyle(
-                                          fontSize: 22,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
+                                        latest.title,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
                                         ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
+                                      const SizedBox(height: 4),
                                       Text(
-                                        'Kesehatan Mental',
+                                        latest.content,
                                         style: TextStyle(
                                           fontSize: 14,
-                                          color: Colors.white70,
+                                          color: isDark
+                                              ? Colors.grey[400]
+                                              : Colors.grey[600],
                                         ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ],
                                   ),
                                 ),
+                                Icon(
+                                  Icons.chevron_right_rounded,
+                                  color: Colors.grey[400],
+                                ),
                               ],
-                            ),
-                            const SizedBox(height: 20),
-                            const Text(
-                              'Mulai screening sederhana untuk memprediksi risiko kesehatan mental secara cepat dan akurat.',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.white,
-                                height: 1.5,
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (_) => const ScreeningPage(),
-                                    ),
-                                  );
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  foregroundColor: AppColors.primaryBlue,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 16,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      'Mulai Screening',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    SizedBox(width: 8),
-                                    Icon(Icons.arrow_forward_rounded),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
+                            );
+                          },
+                          loading: () =>
+                              const Center(child: CircularProgressIndicator()),
+                          error: (e, st) => Text('Error: $e'),
                         ),
                       ),
                     ),
                   ),
-
-                  const SizedBox(height: 16),
-                  _buildBroadcastBanner(context, ref),
-                  const SizedBox(height: 28),
-
-                  // Journal Section
-                  AnimationDelay(
-                    delay: const Duration(milliseconds: 900),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Jurnal Terbaru',
-                              style: Theme.of(context).textTheme.titleLarge,
-                            ),
-                            TextButton.icon(
-                              onPressed: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const JournalPage(),
-                                ),
-                              ),
-                              icon: const Text('Lihat Semua'),
-                              label: const Icon(
-                                Icons.arrow_forward_rounded,
-                                size: 18,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-
-                        // Journal Preview Card
-                        Container(
-                          decoration: BoxDecoration(
-                            color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: isDark
-                                ? []
-                                : [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.05),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                          ),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(20),
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => const JournalPage()),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(20),
-                              child: journalAsync.when(
-                                data: (journals) {
-                                  if (journals.isEmpty) {
-                                    return _buildEmptyJournalState(context);
-                                  }
-                                  final latest = journals.first;
-                                  return Row(
-                                    children: [
-                                      Container(
-                                        width: 56,
-                                        height: 56,
-                                        decoration: BoxDecoration(
-                                          color: AppColors.primaryBlue.withOpacity(
-                                            0.1,
-                                          ),
-                                          borderRadius: BorderRadius.circular(16),
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            latest.mood,
-                                            style: const TextStyle(fontSize: 28),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 16),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              latest.title,
-                                              style: const TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              latest.content,
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: isDark
-                                                    ? Colors.grey[400]
-                                                    : Colors.grey[600],
-                                              ),
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Icon(
-                                        Icons.chevron_right_rounded,
-                                        color: Colors.grey[400],
-                                      ),
-                                    ],
-                                  );
-                                },
-                                loading: () =>
-                                    const Center(child: CircularProgressIndicator()),
-                                error: (e, st) => Text('Error: $e'),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 110),
                 ],
               ),
             ),
           ),
         ],
+      ),
+
+      // Modern FAB
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _showAddJournalDialog(context, ref),
+        icon: const Icon(Icons.edit_rounded),
+        label: const Text('Tulis Jurnal'),
       ),
     );
   }
@@ -664,41 +646,6 @@ class HomePage extends ConsumerWidget {
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBroadcastBanner(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(adminSettingsProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    if (settings.broadcastMessage.isEmpty) return const SizedBox.shrink();
-
-    return AnimationDelay(
-      delay: const Duration(milliseconds: 700),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: AppColors.primaryBlue.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.primaryBlue.withOpacity(0.3)),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.campaign_rounded, color: AppColors.primaryBlue),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                settings.broadcastMessage,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: isDark ? Colors.blue[200] : AppColors.primaryBlueDark,
-                ),
-              ),
-            ),
-          ],
         ),
       ),
     );

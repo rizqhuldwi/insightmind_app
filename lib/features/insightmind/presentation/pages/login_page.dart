@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
 import 'register_page.dart';
-import 'main_screen.dart';
+import 'home_page.dart';
 import 'admin_dashboard_page.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
@@ -45,7 +45,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           MaterialPageRoute(
             builder: (_) => user.isAdmin 
                 ? const AdminDashboardPage() 
-                : const MainScreen(),
+                : const HomePage(),
           ),
         );
       }

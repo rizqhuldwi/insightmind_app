@@ -1,45 +1,16 @@
-import 'package:hive/hive.dart';
-
-part 'question.g.dart';
-
-@HiveType(typeId: 8)
 class AnswerOption {
-  @HiveField(0)
-  final String label;
-
-  @HiveField(1)
-  final int score;
+  final String label; // contoh: "Tidak Pernah", "Beberapa Hari", ...
+  final int score; // 0..3
 
   const AnswerOption({required this.label, required this.score});
-
-  AnswerOption copyWith({String? label, int? score}) {
-    return AnswerOption(
-      label: label ?? this.label,
-      score: score ?? this.score,
-    );
-  }
 }
 
-@HiveType(typeId: 7)
 class Question {
-  @HiveField(0)
   final String id;
-
-  @HiveField(1)
   final String text;
-
-  @HiveField(2)
   final List<AnswerOption> options;
 
   const Question({required this.id, required this.text, required this.options});
-
-  Question copyWith({String? id, String? text, List<AnswerOption>? options}) {
-    return Question(
-      id: id ?? this.id,
-      text: text ?? this.text,
-      options: options ?? this.options,
-    );
-  }
 }
 
 /// Contoh 9 pertanyaan gaya PHQ/DASS (parafrase; bukan kutipan verbatim)

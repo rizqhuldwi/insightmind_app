@@ -12,10 +12,18 @@ class ThemeToggleWidget extends ConsumerWidget {
     final isDark = themeMode == ThemeMode.dark;
 
     return IconButton(
-      key: UniqueKey(),
-      icon: Icon(
-        isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-        color: Colors.white,
+      icon: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        transitionBuilder: (child, animation) {
+          return RotationTransition(
+            turns: animation,
+            child: FadeTransition(opacity: animation, child: child),
+          );
+        },
+        child: Icon(
+          isDark ? Icons.light_mode : Icons.dark_mode,
+          key: ValueKey(isDark),
+        ),
       ),
       tooltip: isDark ? 'Light Mode' : 'Dark Mode',
       onPressed: () {

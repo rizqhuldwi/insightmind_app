@@ -6,10 +6,7 @@ import 'features/insightmind/data/local/screening_record.dart';
 import 'features/insightmind/data/local/journal_entry.dart';
 import 'features/insightmind/data/local/user.dart';
 import 'features/insightmind/data/local/mood_entry.dart';
-import 'features/insightmind/data/local/profile.dart';
 import 'features/insightmind/data/local/auth_repository.dart';
-import 'features/insightmind/data/local/admin_settings.dart';
-import 'features/insightmind/domain/entities/question.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,10 +19,6 @@ void main() async {
   Hive.registerAdapter(JournalEntryAdapter());
   Hive.registerAdapter(UserAdapter());
   Hive.registerAdapter(MoodEntryAdapter());
-  Hive.registerAdapter(ProfileAdapter());
-  Hive.registerAdapter(AdminSettingsAdapter());
-  Hive.registerAdapter(QuestionAdapter());
-  Hive.registerAdapter(AnswerOptionAdapter());
 
   // Buka box-box yang diperlukan
   await Hive.openBox<ScreeningRecord>('screening_records');
@@ -33,9 +26,6 @@ void main() async {
   await Hive.openBox<User>('users');
   await Hive.openBox('auth_session');
   await Hive.openBox<MoodEntry>('mood_entries');
-  await Hive.openBox<Profile>('profiles');
-  await Hive.openBox<AdminSettings>('admin_settings');
-  await Hive.openBox<Question>('screening_questions');
 
   // Inisialisasi admin default
   final authRepo = AuthRepository();

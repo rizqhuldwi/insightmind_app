@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../features/insightmind/presentation/pages/home_page.dart';
 import '../features/insightmind/presentation/pages/login_page.dart';
 import '../features/insightmind/presentation/pages/admin_dashboard_page.dart';
-import '../features/insightmind/presentation/pages/main_screen.dart';
 import '../features/insightmind/presentation/providers/auth_provider.dart';
 import '../features/insightmind/presentation/providers/theme_provider.dart';
 import 'app_themes.dart';
@@ -68,6 +67,6 @@ class _InsightMindAppState extends ConsumerState<InsightMindApp> {
     }
 
     // Jika user biasa, tampilkan home page
-    return const MainScreen();
+    return const HomePage();
   }
 }
