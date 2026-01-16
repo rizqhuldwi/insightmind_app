@@ -173,13 +173,15 @@ class JournalPage extends ConsumerWidget {
                 ),
               ],
       ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: () => _showJournalDetail(context, ref, journal),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () => _showJournalDetail(context, ref, journal),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Mood Emoji
               Container(
@@ -302,6 +304,7 @@ class JournalPage extends ConsumerWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }

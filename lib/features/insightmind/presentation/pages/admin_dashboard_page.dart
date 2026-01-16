@@ -127,7 +127,7 @@ class AdminDashboardPage extends ConsumerWidget {
                           const SizedBox(height: 16),
                           _buildSummaryStats(regularUsers),
                           const SizedBox(height: 20),
-                          ...regularUsers.map((user) => _UserCard(user: user)),
+                          ...regularUsers.map((user) => _UserCard(key: ValueKey(user.id), user: user)),
                         ],
                       );
                     },
@@ -292,7 +292,7 @@ class AdminDashboardPage extends ConsumerWidget {
 class _UserCard extends ConsumerStatefulWidget {
   final User user;
 
-  const _UserCard({required this.user});
+  const _UserCard({super.key, required this.user});
 
   @override
   ConsumerState<_UserCard> createState() => _UserCardState();
@@ -320,14 +320,16 @@ class _UserCardState extends ConsumerState<_UserCard> {
                 ),
               ],
       ),
-      child: Column(
-        children: [
-          // User Info Header
-          InkWell(
-            borderRadius: BorderRadius.circular(20),
-            onTap: () {
-              setState(() => _isExpanded = !_isExpanded);
-            },
+      child: Material(
+        color: Colors.transparent,
+        child: Column(
+          children: [
+            // User Info Header
+            InkWell(
+              borderRadius: BorderRadius.circular(20),
+              onTap: () {
+                setState(() => _isExpanded = !_isExpanded);
+              },
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
@@ -387,9 +389,10 @@ class _UserCardState extends ConsumerState<_UserCard> {
             ),
           ),
 
-          // Expanded Screening Details
-          if (_isExpanded) _buildScreeningDetails(),
-        ],
+            // Expanded Screening Details
+            if (_isExpanded) _buildScreeningDetails(),
+          ],
+        ),
       ),
     );
   }

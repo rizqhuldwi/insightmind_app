@@ -307,13 +307,15 @@ class HomePage extends ConsumerWidget {
                               ),
                             ],
                     ),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(20),
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const JournalPage()),
-                      ),
-                      child: Padding(
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(20),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const JournalPage()),
+                        ),
+                        child: Padding(
                         padding: const EdgeInsets.all(20),
                         child: journalAsync.when(
                           data: (journals) {
@@ -382,6 +384,7 @@ class HomePage extends ConsumerWidget {
                         ),
                       ),
                     ),
+                  ),
                   ),
                 ],
               ),
