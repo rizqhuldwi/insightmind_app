@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/theme_toggle_widget.dart';
 import '../widgets/color_selection_widget.dart';
-import '../../data/local/user.dart';
-import '../../data/local/screening_record.dart';
 import 'login_page.dart';
 import 'manage_questions_page.dart';
 import '../providers/questionnaire_provider.dart';

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pam_teori/features/insightmind/data/local/journal_entry.dart';
 import 'package:pam_teori/features/insightmind/presentation/providers/journal_provider.dart';
-import '../../../../src/app_themes.dart';
 
 class JournalPage extends ConsumerWidget {
   const JournalPage({super.key});

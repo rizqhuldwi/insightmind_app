@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pam_teori/features/insightmind/presentation/providers/history_provider.dart';
 import 'dart:convert';
-import '../../../../src/app_themes.dart';
 import '../providers/score_provider.dart';
 import '../providers/questionnaire_provider.dart';
 import '../providers/auth_provider.dart';

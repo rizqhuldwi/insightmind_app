@@ -4,7 +4,6 @@ import '../providers/journal_provider.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/theme_toggle_widget.dart';
 import '../widgets/color_selection_widget.dart';
-import '../../../../src/app_themes.dart';
 import 'screening_page.dart';
 import 'history_page.dart';
 import 'journal_page.dart';

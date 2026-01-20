@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pam_teori/features/insightmind/presentation/providers/history_provider.dart';
-import '../../../../src/app_themes.dart';
 import 'history_detail_page.dart';
 
 class HistoryPage extends ConsumerWidget {

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../../../../src/app_themes.dart';
 import '../providers/mood_provider.dart';
 import '../widgets/mood_chart_widget.dart';
 import '../widgets/mood_entry_dialog.dart';
@@ -18,7 +17,6 @@ class MoodTrackerPage extends ConsumerStatefulWidget {
 class _MoodTrackerPageState extends ConsumerState<MoodTrackerPage> {
   bool showWeeklyView = true;
 
-  @override
   @override
   Widget build(BuildContext context) {
     final moodListAsync = ref.watch(moodListProvider);
