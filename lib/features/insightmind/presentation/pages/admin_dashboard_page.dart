@@ -375,14 +375,11 @@ void _showLogoutDialog(BuildContext context, WidgetRef ref) {
           child: const Text('Batal'),
         ),
         FilledButton(
-          onPressed: () async {
-            Navigator.pop(ctx);
-            await ref.read(authNotifierProvider.notifier).logout();
-            if (context.mounted) {
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (_) => const LoginPage()),
-              );
-            }
+          onPressed: () {
+            Navigator.pop(ctx); // Close dialog first
+            // Just call logout - InsightMindApp will automatically 
+            // navigate to LoginPage based on auth state change
+            ref.read(authNotifierProvider.notifier).logout();
           },
           child: const Text('Logout'),
         ),

@@ -29,7 +29,10 @@ class _InsightMindAppState extends ConsumerState<InsightMindApp> {
     final authState = ref.watch(authNotifierProvider);
     final themeSettings = ref.watch(themeProvider);
 
+    // Use a key based on theme to force clean widget tree recreation
+    // This prevents GlobalKey conflicts with ink renderers during theme changes
     return MaterialApp(
+      key: ValueKey('app_${themeSettings.mode}_${themeSettings.colorIndex}'),
       title: 'InsightMind',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.createTheme(false, themeSettings.palette),
@@ -43,6 +46,7 @@ class _InsightMindAppState extends ConsumerState<InsightMindApp> {
     // Loading state saat cek auth
     if (authState.isLoading) {
       return const Scaffold(
+        key: ValueKey('loading_screen'),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -58,15 +62,15 @@ class _InsightMindAppState extends ConsumerState<InsightMindApp> {
 
     // Jika belum login, tampilkan login page
     if (!authState.isLoggedIn || authState.user == null) {
-      return const LoginPage();
+      return const LoginPage(key: ValueKey('login_page'));
     }
 
     // Jika admin, tampilkan admin dashboard
     if (authState.user!.isAdmin) {
-      return const AdminDashboardPage();
+      return const AdminDashboardPage(key: ValueKey('admin_dashboard'));
     }
 
     // Jika user biasa, tampilkan home page
-    return const MainPage();
+    return const MainPage(key: ValueKey('main_page'));
   }
 }

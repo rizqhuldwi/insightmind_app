@@ -30,10 +30,10 @@ class _MainPageState extends ConsumerState<MainPage> {
       extendBody: true,
       body: IndexedStack(
         index: selectedIndex,
-        children: const [
-          _HomeBody(),
-          HistoryPage(isEmbedded: true),
-          ProfilePage(isEmbedded: true),
+        children: [
+          _HomeBody(key: const ValueKey('home_body')),
+          HistoryPage(key: const ValueKey('history_page'), isEmbedded: true),
+          ProfilePage(key: const ValueKey('profile_page'), isEmbedded: true),
         ],
       ),
       // Modern Floating Navigation Bar
@@ -55,7 +55,7 @@ class _MainPageState extends ConsumerState<MainPage> {
 
 
 class _HomeBody extends ConsumerStatefulWidget {
-  const _HomeBody();
+  const _HomeBody({super.key});
 
   @override
   ConsumerState<_HomeBody> createState() => _HomeBodyState();
@@ -801,14 +801,11 @@ class _HomeBodyState extends ConsumerState<_HomeBody> with TickerProviderStateMi
             child: const Text('Batal'),
           ),
           FilledButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              await ref.read(authNotifierProvider.notifier).logout();
-              if (context.mounted) {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (_) => const LoginPage()),
-                );
-              }
+            onPressed: () {
+              Navigator.pop(ctx); // Close dialog first
+              // Just call logout - InsightMindApp will automatically 
+              // navigate to LoginPage based on auth state change
+              ref.read(authNotifierProvider.notifier).logout();
             },
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Logout'),
